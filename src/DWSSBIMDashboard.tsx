@@ -861,7 +861,25 @@ const DWSSBIMDashboard = () => {
     let allFiles = files;
     
     // 历史视图模式：只显示与当前浮窗构件相关的条目
-    if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
+    if (viewMode === 'historical' && selectedModelVersion !== 'current') {
+      // 获取当前历史视图中的构件ID列表
+      const currentViewComponentIds = components
+        .filter(c => c.modelVersionId === selectedModelVersion)
+        .map(c => c.id);
+      
+      allFiles = files.filter(file => {
+        // 检查条目的绑定构件ID是否在当前历史视图中存在
+        const hasMatchingComponents = file.objects.some(objId => 
+          currentViewComponentIds.includes(objId)
+        );
+        
+        // 检查条目的绑定版本ID是否与当前选择的历史版本匹配
+        const hasMatchingVersion = file.boundModelVersionId === selectedModelVersion;
+        
+        // 只有同时满足构件ID和版本ID条件的条目才显示
+        return hasMatchingComponents && hasMatchingVersion;
+      });
+    } else if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
       allFiles = files.filter(file => 
         file.objects.includes(floatingPanel.componentInfo!.componentId) ||
         (file.bindingStatus === 'history' && file.linkedToCurrent)
