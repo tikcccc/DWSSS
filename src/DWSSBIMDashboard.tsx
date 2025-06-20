@@ -2504,39 +2504,6 @@ const DWSSBIMDashboard = () => {
               </div>
             </div>
             
-            <div className="border-t pt-4">
-              <h2 className="text-lg font-medium mb-3">关联对象组</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {riscItem.objects.map(objId => {
-                  const objectData = components.find(obj => obj.id === objId);
-                  return (
-                    <div key={objId} className="border rounded p-4">
-                      <h3 className="font-medium text-blue-700">{objId}</h3>
-                      {objectData && (
-                        <div className="mt-2 text-sm">
-                          <div className="flex items-center">
-                            <span>名称: {objectData.name}</span>
-                            {objectData.version !== 'current' && (
-                              <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center">
-                                <History className="w-3 h-3 mr-1" />
-                                历史版本
-                              </span>
-                            )}
-                          </div>
-                          <div>版本: {objectData.version}</div>
-                          <div className="text-xs text-gray-500">对象组: {objectData.objectGroup}</div>
-                          <div className="mt-1 text-xs text-gray-500">
-                            <div>位置: {objectData.properties.position}</div>
-                            <div>材料: {objectData.properties.material}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            
             <div className="border-t mt-6 pt-4">
               <h2 className="text-lg font-medium mb-3">RISC表单内容</h2>
               <div className="bg-gray-100 p-4 rounded">
@@ -2611,39 +2578,6 @@ const DWSSBIMDashboard = () => {
                   <Download className="w-4 h-4 mr-2" />
                   下载文件
                 </button>
-              </div>
-            </div>
-            
-            <div className="border-t pt-4">
-              <h2 className="text-lg font-medium mb-3">关联对象组</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {fileItem.objects.map(objId => {
-                  const objectData = components.find(obj => obj.id === objId);
-                  return (
-                    <div key={objId} className="border rounded p-4">
-                      <h3 className="font-medium text-blue-700">{objId}</h3>
-                      {objectData && (
-                        <div className="mt-2 text-sm">
-                          <div className="flex items-center">
-                            <span>名称: {objectData.name}</span>
-                            {objectData.version !== 'current' && (
-                              <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center">
-                                <History className="w-3 h-3 mr-1" />
-                                历史版本
-                              </span>
-                            )}
-                          </div>
-                          <div>版本: {objectData.version}</div>
-                          <div className="text-xs text-gray-500">对象组: {objectData.objectGroup}</div>
-                          <div className="mt-1 text-xs text-gray-500">
-                            <div>位置: {objectData.properties.position}</div>
-                            <div>材料: {objectData.properties.material}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
               </div>
             </div>
             
@@ -2799,18 +2733,6 @@ const DWSSBIMDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div 
                       className="flex-1 min-w-0 pr-3 cursor-default"
-                      onMouseEnter={() => {
-                        // 悬浮构件文本区域时，在BIM视图中显示黄色高光
-                        setHoveredObjects([obj.id]);
-                        setHoveredItem(obj);
-                        setHoveredItemType('component');
-                      }}
-                      onMouseLeave={() => {
-                        // 移除悬浮高光
-                        setHoveredObjects([]);
-                        setHoveredItem(null);
-                        setHoveredItemType(null);
-                      }}
                       title={`悬浮查看构件在BIM视图中的位置: ${obj.name}`}
                     >
                       <div className="text-sm font-medium text-gray-900 flex items-center">
@@ -4600,6 +4522,9 @@ const DWSSBIMDashboard = () => {
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       更新日期
                     </th>
+                    <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      上传者
+                    </th>
                     <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       关联构件
                     </th>
@@ -4637,6 +4562,7 @@ const DWSSBIMDashboard = () => {
                         <td className="p-3">v{file.version || 1}</td>
                         <td className="p-3">{file.uploadDate}</td>
                         <td className="p-3">{file.updateDate}</td>
+                        <td className="p-3 text-sm text-gray-600">{file.uploadedBy}</td>
                         <td className="p-3 text-center">{file.objects.length}</td>
                         <td className="p-3">
                           <div className="flex items-center justify-end space-x-1">
@@ -4679,7 +4605,7 @@ const DWSSBIMDashboard = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-gray-500">
+                      <td colSpan={8} className="py-8 text-center text-gray-500">
                         {fileSearchText ? 
                           `没有找到包含 "${fileSearchText}" 的文件` : 
                           '没有关联的文件'
