@@ -563,11 +563,11 @@ const DWSSBIMDashboard = () => {
 
   // 管理员后台用户数据
   const [adminUsers, setAdminUsers] = useState([
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Authorized User', status: 'Active', lastLogin: '2025-03-08 09:15' },
-    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Authorized User', status: 'Active', lastLogin: '2025-03-08 08:30' },
-    { id: 3, name: 'Mike Johnson', email: 'mike.johnson@example.com', role: 'View-only User', status: 'Active', lastLogin: '2025-03-07 16:45' },
-    { id: 4, name: 'Sarah Wilson', email: 'sarah.wilson@example.com', role: 'Authorized User', status: 'Inactive', lastLogin: '2025-03-05 14:20' },
-    { id: 5, name: 'Tom Chen', email: 'tom.chen@example.com', role: 'Admin', status: 'Active', lastLogin: '2025-03-08 10:00' }
+    { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Authorized User', lastLogin: '2025-03-08 09:15' },
+    { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Authorized User', lastLogin: '2025-03-08 08:30' },
+    { id: 3, name: 'Mike Johnson', email: 'mike.johnson@example.com', role: 'View-only User', lastLogin: '2025-03-07 16:45' },
+    { id: 4, name: 'Sarah Wilson', email: 'sarah.wilson@example.com', role: 'Authorized User', lastLogin: '2025-03-05 14:20' },
+    { id: 5, name: 'Tom Chen', email: 'tom.chen@example.com', role: 'Admin', lastLogin: '2025-03-08 10:00' }
   ]);
 
   // 活动日志数据
@@ -1011,22 +1011,13 @@ const DWSSBIMDashboard = () => {
     setFileFilters(prev => ({ ...prev, [field]: value }));
   };
 
-  // 处理鼠标悬浮 - 支持蓝色/黄色高光逻辑
+  // 处理鼠标悬浮 - 已删除悬浮高光功能
   const handleItemHover = (item: RiscForm | FileItem | any, type: string): void => {
-    // 绑定模式下也允许条目悬浮效果
-    setHoveredItem(item);
-    setHoveredItemType(type);
-    
-    if ('objects' in item) {
-      setHoveredObjects(item.objects);
-    }
+    // 不再提供悬浮高光功能
   };
 
   const handleItemLeave = (): void => {
-    // 清除悬浮状态
-    setHoveredItem(null);
-    setHoveredItemType(null);
-    setHoveredObjects([]);
+    // 不再提供悬浮高光功能
   };
 
   // 处理列表条目点击 - 重新设计的HyD Code交互逻辑 + 历史构件支持
@@ -2274,7 +2265,6 @@ const DWSSBIMDashboard = () => {
                 <th className="text-left py-3 px-4 font-medium text-sm">用户</th>
                 <th className="text-left py-3 px-4 font-medium text-sm">邮箱</th>
                 <th className="text-left py-3 px-4 font-medium text-sm">角色</th>
-                <th className="text-left py-3 px-4 font-medium text-sm">状态</th>
                 <th className="text-left py-3 px-4 font-medium text-sm">操作</th>
               </tr>
             </thead>
@@ -2298,15 +2288,6 @@ const DWSSBIMDashboard = () => {
                       <option value="Authorized User">授权用户</option>
                       <option value="Admin">管理员</option>
                     </select>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      user.status === 'Active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {user.status === 'Active' ? '活跃' : '非活跃'}
-                    </span>
                   </td>
                   <td className="py-3 px-4">
                     <button className="text-red-600 hover:text-red-800 text-xs" title="删除用户">删除</button>
@@ -4660,7 +4641,7 @@ const DWSSBIMDashboard = () => {
                         <td className="p-3">
                           <div className="flex items-center justify-end space-x-1">
                             <button
-                              onClick={() => handleNavigateToDetail(file, 'file')}
+                              onClick={() => handleListItemClick(file, 'file')}
                               className="text-blue-600 hover:text-blue-800 p-1"
                               title="查看详情"
                             >
@@ -5085,8 +5066,8 @@ const DWSSBIMDashboard = () => {
                             <option value="">请选择...</option>
                             {hydCodeOptions[level].map(option => (
                               <option key={option} value={option}>{option}</option>
-                            ))}
-                          </select>
+                ))}
+              </select>
                         </div>
                       ))}
                     </div>
@@ -5213,8 +5194,6 @@ const DWSSBIMDashboard = () => {
                                   }`}
                                   onClick={() => handleListItemClick(form, 'risc')}
                                   onDoubleClick={() => handleDoubleClick(form, 'risc')}
-                                  onMouseEnter={() => handleItemHover(form, 'risc')}
-                                  onMouseLeave={handleItemLeave}
                                 >
                                   <td className="py-2 px-3">
                                     <a 
