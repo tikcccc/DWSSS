@@ -1363,7 +1363,7 @@ const DWSSBIMDashboard = () => {
     if (item.objects.length > 0) {
       if (item.uploadedBy !== currentUser && !isAdmin()) {
         alert('您只能编辑自己上传的文件');
-        return;
+      return;
       }
     }
 
@@ -1700,16 +1700,21 @@ const DWSSBIMDashboard = () => {
 
   // 关闭历史视图浮窗
   const handleCloseFloatingPanel = () => {
+    // 保存当前的历史版本状态
+    const wasInHistoricalView = floatingPanel.isHistoricalView;
+    const currentHistoricalVersion = selectedModelVersion;
+    
     setFloatingPanel({
       visible: false,
       componentInfo: null,
       isHistoricalView: false
     });
     
-    // 如果当前在历史视图模式，恢复到原始模型版本
-    if (floatingPanel.isHistoricalView) {
-      setSelectedModelVersion(originalModelVersion);
-      setViewMode(originalModelVersion === 'current' ? 'current' : 'historical');
+    // 如果当前在历史视图模式，保持在当前历史版本而不恢复到原始版本
+    if (wasInHistoricalView && currentHistoricalVersion !== 'current') {
+      // 保持当前的历史版本视图
+      setViewMode('historical');
+      // selectedModelVersion 已经是正确的历史版本，无需修改
     }
     
     // 清除高光和选择状态
@@ -5885,25 +5890,28 @@ const DWSSBIMDashboard = () => {
       {/* 右键菜单 */}
       <ContextMenu />
       
-      {/* 历史视图浮窗 */}
+      {/* 历史视图浮窗 - 优化UI尺寸和位置 */}
       {floatingPanel.visible && floatingPanel.componentInfo && (
         <div 
-          className="fixed bg-white bg-opacity-90 rounded-lg shadow-2xl border border-gray-300 z-50 cursor-move"
+          className="fixed bg-white bg-opacity-95 rounded-lg shadow-2xl border border-gray-300 z-50 cursor-move"
           style={{
             left: `${panelPosition.x}px`,
             top: `${panelPosition.y}px`,
-            width: '320px',
-            height: '240px',
-            backdropFilter: 'blur(8px)'
+            width: '280px',
+            height: 'auto',
+            maxHeight: '220px',
+            backdropFilter: 'blur(10px)',
+            display: 'flex',
+            flexDirection: 'column',
           }}
           onMouseDown={handleMouseDown}
         >
-          {/* 标题栏 */}
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 bg-opacity-95 text-white px-3 py-2 rounded-t-lg flex items-center justify-between cursor-grab active:cursor-grabbing">
-            <div className="flex items-center space-x-2">
-              <History className="w-4 h-4" />
+          {/* 标题栏 - 更紧凑 */}
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 bg-opacity-95 text-white px-2 py-1 rounded-t-lg flex items-center justify-between cursor-grab active:cursor-grabbing flex-shrink-0">
+            <div className="flex items-center space-x-1.5">
+              <History className="w-3.5 h-3.5" />
               <span className="font-semibold text-xs">
-                {floatingPanel.isHistoricalView ? '历史视图模式' : '当前视图模式'}
+                {floatingPanel.isHistoricalView ? '历史视图' : '当前视图'}
               </span>
             </div>
             <button 
@@ -5911,67 +5919,83 @@ const DWSSBIMDashboard = () => {
                 e.stopPropagation();
                 handleCloseFloatingPanel();
               }}
-              className="text-white hover:bg-white hover:bg-opacity-20 rounded p-1"
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded p-0.5"
               title="关闭浮窗"
             >
               <X className="w-3 h-3" />
             </button>
           </div>
           
-          {/* 内容区域 */}
-          <div className="p-3 space-y-2 text-xs">
-            {/* 构件信息 */}
-            <div className="border-b border-gray-200 pb-2">
-              <h4 className="font-semibold text-gray-800 mb-1 text-xs">构件信息</h4>
-              <div className="text-gray-600 space-y-0.5">
-                <div>构件ID: <span className="font-mono text-xs">{floatingPanel.componentInfo.componentId}</span></div>
-                <div>当前版本: <span className="font-mono text-xs">{floatingPanel.componentInfo.currentVersionId}</span></div>
-                <div>历史版本: <span className="font-mono text-xs">{floatingPanel.componentInfo.historicalVersionId}</span></div>
+          {/* 内容区域 - 更紧凑的布局 */}
+          <div className="p-2 space-y-1 text-xs overflow-y-auto flex-grow">
+            {/* 构件信息 - 简化显示 */}
+            <div className="border-b border-gray-200 pb-1">
+              <div className="flex items-center justify-between mb-0.5">
+                <h4 className="font-semibold text-gray-800 text-xs">构件信息</h4>
+                <span className="text-xs text-gray-500 font-mono">{floatingPanel.componentInfo.componentId}</span>
+              </div>
+              <div className="text-gray-600 space-y-0.5 text-xs">
+                <div className="flex justify-between">
+                  <span>当前版本:</span>
+                  <span className="font-mono text-xs">{floatingPanel.componentInfo.currentVersionId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>历史版本:</span>
+                  <span className="font-mono text-xs">{floatingPanel.componentInfo.historicalVersionId}</span>
+                </div>
               </div>
             </div>
             
-            {/* 文件信息 */}
-            <div className="border-b border-gray-200 pb-2">
-              <h4 className="font-semibold text-gray-800 mb-1 text-xs">
-                {floatingPanel.componentInfo.fileType === 'file' ? '关联文件' : '关联RISC表单'}
+            {/* 文件信息 - 简化显示 */}
+            <div className="border-b border-gray-200 pb-1">
+              <h4 className="font-semibold text-gray-800 mb-0.5 text-xs">
+                {floatingPanel.componentInfo.fileType === 'file' ? '关联文件' : '关联RISC'}
               </h4>
-              <div className="text-gray-600 space-y-0.5">
-                <div className="truncate">名称: <span className="font-medium">{floatingPanel.componentInfo.fileInfo.name || (floatingPanel.componentInfo.fileInfo as RiscForm).requestNo}</span></div>
-                <div>更新时间: <span>{floatingPanel.componentInfo.fileInfo.updateDate || (floatingPanel.componentInfo.fileInfo as FileItem).uploadDate}</span></div>
+              <div className="text-gray-600 text-xs">
+                <div className="truncate">
+                  <span className="font-medium">{floatingPanel.componentInfo.fileInfo.name || (floatingPanel.componentInfo.fileInfo as RiscForm).requestNo}</span>
+                </div>
               </div>
             </div>
             
-            {/* 变更说明 */}
-            <div className="border-b border-gray-200 pb-2">
-              <h4 className="font-semibold text-gray-800 mb-1 text-xs">变更说明</h4>
+            {/* 变更说明 - 紧凑显示 */}
+            <div className="pb-1">
+              <h4 className="font-semibold text-gray-800 mb-0.5 text-xs">变更说明</h4>
               <div className="text-gray-600 space-y-0.5 max-h-12 overflow-y-auto">
-                {floatingPanel.componentInfo.changes.slice(0, 2).map((change, index) => (
-                  <div key={index} className="flex items-start space-x-1">
-                    <span className="w-1 h-1 bg-blue-500 rounded-full mt-1 flex-shrink-0"></span>
-                    <span className="text-xs">{change}</span>
-                  </div>
-                ))}
+                {floatingPanel.componentInfo.changes.length > 0 ? (
+                  floatingPanel.componentInfo.changes.slice(0, 2).map((change, index) => (
+                    <div key={index} className="flex items-start space-x-1.5">
+                      <span className="w-1 h-1 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                      <span className="text-xs truncate">{change}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs text-gray-400">无变更记录</div>
+                )}
+                {floatingPanel.componentInfo.changes.length > 2 && (
+                  <div className="text-xs text-gray-400 pl-2.5">+{floatingPanel.componentInfo.changes.length - 2} 更多...</div>
+                )}
               </div>
             </div>
+          </div>
+          
+          {/* 操作按钮 - 更紧凑 */}
+          <div className="flex justify-between items-center p-2 border-t border-gray-200 flex-shrink-0">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleHistoricalView();
+              }}
+              className="flex items-center space-x-1 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors text-xs"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>
+                {floatingPanel.isHistoricalView ? '到当前' : '到历史'}
+              </span>
+            </button>
             
-            {/* 操作按钮 */}
-            <div className="flex justify-between items-center pt-1">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleHistoricalView();
-                }}
-                className="flex items-center space-x-1 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors text-xs"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>
-                  {floatingPanel.isHistoricalView ? '切换到当前' : '切换到历史'}
-                </span>
-              </button>
-              
-              <div className="text-xs text-gray-500">
-                {floatingPanel.isHistoricalView ? '历史模型' : '当前模型'}
-              </div>
+            <div className="text-xs text-gray-500">
+              {floatingPanel.isHistoricalView ? '历史模型' : '当前模型'}
             </div>
           </div>
         </div>
