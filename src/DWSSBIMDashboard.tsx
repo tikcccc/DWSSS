@@ -61,6 +61,7 @@ interface Component {
   id: string;
   name: string;
   version: string;
+  modelVersionId: string; // 新增：构件所属的模型版本ID
   objectGroup: string;
   hydCode: HydCode;
   properties: {
@@ -77,6 +78,7 @@ interface ObjectGroup {
   id: string;
   name: string;
   version: string;
+  modelVersionId: string; // 新增：对象组所属的模型版本ID
   components: string[];
   hydCode: HydCode;
   properties: {
@@ -96,7 +98,8 @@ interface RiscForm {
   status: string;
   bindingStatus: 'history' | 'current';
   linkedToCurrent: boolean;
-  objects: string[];
+  objects: string[]; // 构件ID列表
+  boundModelVersionId?: string; // 新增：绑定时的模型版本ID
   createdBy: string;
   hydCode: HydCode;
   changes?: string[];
@@ -111,7 +114,8 @@ interface FileItem {
   bindingStatus: 'history' | 'current';
   uploadedBy: string;
   linkedToCurrent: boolean;
-  objects: string[];
+  objects: string[]; // 构件ID列表
+  boundModelVersionId?: string; // 新增：绑定时的模型版本ID
   hydCode: HydCode;
   changes?: string[];
   version?: number;
@@ -297,6 +301,7 @@ const DWSSBIMDashboard = () => {
       id: 'F-A-001', 
       name: 'Foundation Block A1', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-001',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -310,6 +315,7 @@ const DWSSBIMDashboard = () => {
       id: 'F-A-002', 
       name: 'Foundation Block A2', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-001',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -323,6 +329,7 @@ const DWSSBIMDashboard = () => {
       id: 'F-A-003', 
       name: 'Foundation Block A3', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-001',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -337,6 +344,7 @@ const DWSSBIMDashboard = () => {
       id: 'COL-B-012-BASE', 
       name: 'Column B12 Base', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-002',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -350,6 +358,7 @@ const DWSSBIMDashboard = () => {
       id: 'COL-B-012-MAIN', 
       name: 'Column B12 Main', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-002',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -363,6 +372,7 @@ const DWSSBIMDashboard = () => {
       id: 'COL-B-012-CAP', 
       name: 'Column B12 Cap', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-002',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
@@ -377,6 +387,7 @@ const DWSSBIMDashboard = () => {
       id: 'BEAM-C-025-01', 
       name: 'Beam C25-1', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-003',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'CONCRETE' },
       properties: { 
@@ -390,6 +401,7 @@ const DWSSBIMDashboard = () => {
       id: 'BEAM-C-025-02', 
       name: 'Beam C25-2', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-003',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'CONCRETE' },
       properties: { 
@@ -403,6 +415,7 @@ const DWSSBIMDashboard = () => {
       id: 'BEAM-C-025-03', 
       name: 'Beam C25-3', 
       version: 'current', 
+      modelVersionId: 'current',
       objectGroup: 'OBJ-GROUP-003',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'CONCRETE' },
       properties: { 
@@ -412,28 +425,30 @@ const DWSSBIMDashboard = () => {
         status: 'current'
       }
     },
-    // Historical components
+    // Historical components - 更新为与当前构件相同ID但不同版本
     { 
-      id: 'F-A-001-OLD', 
-      name: 'Foundation Block A1 (Old)', 
+      id: 'F-A-001', // 与当前构件相同的ID
+      name: 'Foundation Block A1 (Historical)', 
       version: 'v1.8', 
-      objectGroup: 'OBJ-GROUP-001-OLD',
+      modelVersionId: 'v1.8', // 历史版本ID
+      objectGroup: 'OBJ-GROUP-001',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
-        position: 'Zone A Foundation Area Block 1 (Old)', 
+        position: 'Zone A Foundation Area Block 1 (Historical)', 
         material: 'C35混凝土', 
         volume: '19.1m³',
         status: 'history'
       }
     },
     { 
-      id: 'F-A-002-OLD', 
-      name: 'Foundation Block A2 (Old)', 
+      id: 'F-A-002', // 与当前构件相同的ID
+      name: 'Foundation Block A2 (Historical)', 
       version: 'v1.8', 
-      objectGroup: 'OBJ-GROUP-001-OLD',
+      modelVersionId: 'v1.8', // 历史版本ID
+      objectGroup: 'OBJ-GROUP-001',
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       properties: { 
-        position: 'Zone A Foundation Area Block 2 (Old)', 
+        position: 'Zone A Foundation Area Block 2 (Historical)', 
         material: 'C35混凝土', 
         volume: '19.1m³',
         status: 'history'
@@ -451,7 +466,8 @@ const DWSSBIMDashboard = () => {
       linkedToCurrent: true, 
       objects: ['F-A-001', 'F-A-002', 'COL-B-012-BASE', 'COL-B-012-MAIN'], 
       createdBy: 'John Doe',
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 'RN0001-RISC-TRC-CS-02000A', 
@@ -462,7 +478,8 @@ const DWSSBIMDashboard = () => {
       linkedToCurrent: true, 
       objects: ['COL-B-012-MAIN', 'COL-B-012-CAP'], 
       createdBy: 'Jane Smith',
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 'RN0001-RISC-TRC-CS-02001', 
@@ -474,7 +491,8 @@ const DWSSBIMDashboard = () => {
       objects: ['F-A-002'], // 关联到当前构件
       createdBy: 'Mike Johnson', 
       changes: ['构件位置调整', '材料参数更新'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'v1.8'
     }
   ]);
 
@@ -489,7 +507,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'John Doe', 
       linkedToCurrent: true, 
       objects: ['F-A-001', 'F-A-002', 'COL-B-012-BASE'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 2, 
@@ -501,7 +520,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'Jane Smith', 
       linkedToCurrent: true, 
       objects: ['BEAM-C-025-01', 'BEAM-C-025-02', 'BEAM-C-025-03'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 4, 
@@ -514,7 +534,8 @@ const DWSSBIMDashboard = () => {
       linkedToCurrent: true, // 修改为true以便测试浮窗功能
       objects: ['F-A-001'], // 关联到当前构件
       changes: ['构件位置调整', '几何形状优化'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'v1.8'
     },
     { 
       id: 5, 
@@ -526,7 +547,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'Administrator', 
       linkedToCurrent: true, 
       objects: ['F-A-001', 'F-A-003'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 6, 
@@ -538,7 +560,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'Administrator', 
       linkedToCurrent: true, 
       objects: ['COL-B-012-BASE', 'COL-B-012-MAIN'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'current'
     },
     { 
       id: 7, 
@@ -550,7 +573,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'John Doe', 
       linkedToCurrent: false, 
       objects: [],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
+      boundModelVersionId: 'v1.8'
     },
     { 
       id: 8, 
@@ -562,7 +586,8 @@ const DWSSBIMDashboard = () => {
       uploadedBy: 'Administrator', 
       linkedToCurrent: false, 
       objects: [],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'STEEL' }
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'STEEL' },
+      boundModelVersionId: 'v1.8'
     }
   ]);
 
@@ -893,18 +918,10 @@ const DWSSBIMDashboard = () => {
     return filtered;
   };
 
-  // 过滤构件 - 现在返回所有构件，但标记哪些符合筛选条件
+  // 过滤构件 - 更新为基于modelVersionId过滤
   const getFilteredObjectGroups = () => {
     // 根据选择的模型版本获取所有构件
-    let allComponents = components.filter(obj => {
-      if (selectedModelVersion === 'current') {
-        return obj.version === 'current';
-      } else {
-        return obj.version === selectedModelVersion || obj.version === 'v1.8';
-      }
-    });
-    
-    return allComponents;
+    return components.filter(obj => obj.modelVersionId === selectedModelVersion);
   };
 
   // 获取符合HyD Code筛选条件的构件ID列表
@@ -1032,53 +1049,86 @@ const DWSSBIMDashboard = () => {
     
     // 检查是否是绑定历史构件的条目
     if ('bindingStatus' in item && item.bindingStatus === 'history' && item.linkedToCurrent) {
-      // 点击绑定历史构件的条目：显示浮窗并高光对应的当前构件
-      const componentId = item.objects[0]; // 假设第一个关联的构件ID
-      // 查找当前模型中ID相同版本为current的构件
-      const currentComponent = components.find(c => c.id === componentId && c.version === 'current');
+      // 点击绑定历史构件的条目：高光当前视图中相同构件ID的构件
+      const componentIds = item.objects; // 绑定的构件ID列表
+      const boundModelVersionId = item.boundModelVersionId || 'v1.8'; // 绑定时的模型版本ID
+      const currentModelVersionId = 'current'; // 当前最新版本ID
       
-      if (currentComponent) {
-        // 高光对应的当前版本构件
-        setManualHighlightSet([componentId]);
-        setSelectedRISC(type === 'risc' ? item.id : null);
-        setSelectedFile(type === 'file' ? item.id : null);
+      if (componentIds.length > 0) {
+        // 高光当前视图中相同构件ID的构件（无论当前视图是什么版本）
+        const currentViewComponents = components.filter(c => 
+          componentIds.includes(c.id) && c.modelVersionId === selectedModelVersion
+        );
         
-        // 创建历史构件信息
-        const historicalInfo: HistoricalComponentInfo = {
-          componentId: componentId,
-          currentVersionId: currentComponent.version,
-          historicalVersionId: 'v1.8', // 假设历史版本
-          fileInfo: item,
-          fileType: type as 'file' | 'risc',
-          changes: item.changes || ['修改了材料属性', '更新了几何信息']
-        };
-        
-        // 显示浮窗
-        setFloatingPanel({
-          visible: true,
-          componentInfo: historicalInfo,
-          isHistoricalView: false // 初始显示当前视图
-        });
-        
-        // 保存原始模型版本
-        setOriginalModelVersion(selectedModelVersion);
+        if (currentViewComponents.length > 0) {
+          setManualHighlightSet(currentViewComponents.map(c => c.id));
+          setSelectedRISC(type === 'risc' ? item.id : null);
+          setSelectedFile(type === 'file' ? item.id : null);
+          
+          // 如果条目的绑定版本ID不是最新版本，显示浮窗
+          if (boundModelVersionId !== currentModelVersionId) {
+            // 使用第一个构件创建历史构件信息
+            const firstComponentId = componentIds[0];
+            const historicalInfo: HistoricalComponentInfo = {
+              componentId: firstComponentId,
+              currentVersionId: currentModelVersionId,
+              historicalVersionId: boundModelVersionId,
+              fileInfo: item,
+              fileType: type as 'file' | 'risc',
+              changes: item.changes || ['版本差异信息', '构件属性更新']
+            };
+            
+            // 显示浮窗
+            setFloatingPanel({
+              visible: true,
+              componentInfo: historicalInfo,
+              isHistoricalView: false // 初始显示当前视图
+            });
+            
+            // 保存原始模型版本
+            setOriginalModelVersion(selectedModelVersion);
+          }
+        }
       }
       return;
     }
     
-    // 绑定模式下，点击条目的效果和绑定模式之外一样
-    // 不再在这里处理文件切换，而是通过专门的按钮处理
-    
-    // 检查是否是历史版本条目，如果是则打开快速对比
-    if ('bindingStatus' in item && item.bindingStatus === 'history') {
-      setCompareData({
-        item: item as RiscForm | FileItem,
-        type,
-        currentVersion: selectedModelVersion,
-        targetVersion: 'v1.8'
-      });
-      setShowQuickCompare(true);
-      return;
+    // 处理普通条目点击
+    if ('objects' in item && item.objects.length > 0) {
+      const componentIds = item.objects;
+      const boundModelVersionId = item.boundModelVersionId || 'current';
+      const currentModelVersionId = 'current';
+      
+      // 始终高光当前视图中相同构件ID的构件
+      const currentViewComponents = components.filter(c => 
+        componentIds.includes(c.id) && c.modelVersionId === selectedModelVersion
+      );
+      
+      if (currentViewComponents.length > 0) {
+        setManualHighlightSet(currentViewComponents.map(c => c.id));
+        
+        // 如果条目的绑定版本ID不是最新版本，显示浮窗
+        if (boundModelVersionId !== currentModelVersionId) {
+          const firstComponentId = componentIds[0];
+          const historicalInfo: HistoricalComponentInfo = {
+            componentId: firstComponentId,
+            currentVersionId: currentModelVersionId,
+            historicalVersionId: boundModelVersionId,
+            fileInfo: item,
+            fileType: type as 'file' | 'risc',
+            changes: item.changes || ['版本差异信息', '构件属性更新']
+          };
+          
+          // 显示浮窗
+          setFloatingPanel({
+            visible: true,
+            componentInfo: historicalInfo,
+            isHistoricalView: false
+          });
+          
+          setOriginalModelVersion(selectedModelVersion);
+        }
+      }
     }
     
     // 检查是否在HyD Code筛选模式下
@@ -1159,7 +1209,11 @@ const DWSSBIMDashboard = () => {
         // 选中新的RISC
         setSelectedRISC(riscItem.id);
         setSelectedFile(null);
-        setManualHighlightSet(riscItem.objects);
+        // 高光当前视图中相同构件ID的构件
+        const currentViewComponents = components.filter(c => 
+          riscItem.objects.includes(c.id) && c.modelVersionId === selectedModelVersion
+        );
+        setManualHighlightSet(currentViewComponents.map(c => c.id));
       }
     } else if (type === 'file') {
       const fileItem = item as FileItem;
@@ -1172,7 +1226,11 @@ const DWSSBIMDashboard = () => {
         // 选中新的文件
         setSelectedFile(fileItem.id);
         setSelectedRISC(null);
-        setManualHighlightSet(fileItem.objects);
+        // 高光当前视图中相同构件ID的构件
+        const currentViewComponents = components.filter(c => 
+          fileItem.objects.includes(c.id) && c.modelVersionId === selectedModelVersion
+        );
+        setManualHighlightSet(currentViewComponents.map(c => c.id));
       }
     }
   };
