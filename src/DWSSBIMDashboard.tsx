@@ -1717,10 +1717,11 @@ const DWSSBIMDashboard = () => {
       // selectedModelVersion 已经是正确的历史版本，无需修改
     }
     
-    // 清除高光和选择状态
-    setManualHighlightSet([]);
-    setSelectedRISC(null);
-    setSelectedFile(null);
+    // 保持当前的选中状态和高光效果，不清除它们
+    // 注释掉以下清除操作：
+    // setManualHighlightSet([]);
+    // setSelectedRISC(null);
+    // setSelectedFile(null);
   };
 
   // 发送邀请
