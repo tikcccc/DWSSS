@@ -1381,13 +1381,15 @@ const DWSSBIMDashboard = () => {
 
     // 进入绑定模式
     setIsBindingMode(true);
+    // 只加载与当前选择版本匹配的构件到购物车
+    const matchingObjects = item.objects
+      .map(objId => components.find(c => c.id === objId))
+      .filter(obj => obj && obj.modelVersionId === selectedModelVersion) as Component[];
+    
     setBindingCart({
       files: [item],
-      objects: [...item.objects.map(objId => components.find(c => c.id === objId)).filter(Boolean)] as Component[],
-      hasHistoricalObjects: item.objects.some(objId => {
-        const obj = components.find(c => c.id === objId);
-        return obj && obj.version !== 'current';
-      })
+      objects: matchingObjects,
+      hasHistoricalObjects: matchingObjects.some(obj => obj.modelVersionId !== 'current')
     });
     setShowBindingCart(true);
     
@@ -1450,8 +1452,10 @@ const DWSSBIMDashboard = () => {
     
     // 取消文件锁定逻辑 - 直接允许切换到新文件
     
-    // 获取文件关联的构件
-    const linkedObjects = components.filter(obj => file.objects.includes(obj.id));
+    // 获取文件关联的构件，但只加载与当前选择版本匹配的构件
+    const linkedObjects = components.filter(obj => 
+      file.objects.includes(obj.id) && obj.modelVersionId === selectedModelVersion
+    );
     const hasHistoricalObjects = linkedObjects.some(obj => obj.modelVersionId !== 'current');
     
     // 设置绑定购物车 - 切换文件，构件预加载
@@ -1476,11 +1480,12 @@ const DWSSBIMDashboard = () => {
       cat: ''
     });
     
-    // 如果文件关联了历史对象，自动切换到相应的版本视图
-    if (hasHistoricalObjects && file.bindingStatus === 'history') {
-      setSelectedModelVersion('v1.8');
-      setViewMode('historical');
-    }
+    // 注释掉自动版本切换逻辑 - 绑定模式下始终保持在当前版本视图
+    // 这样可以确保绑定面板只显示当前版本的构件，避免混合显示历史构件
+    // if (hasHistoricalObjects && file.bindingStatus === 'history') {
+    //   setSelectedModelVersion('v1.8');
+    //   setViewMode('historical');
+    // }
     
     // 激活绑定模式
     setIsBindingMode(true);
