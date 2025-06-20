@@ -3490,9 +3490,6 @@ const DWSSBIMDashboard = () => {
     const [showFilePreview, setShowFilePreview] = useState(false);
     const [previewFile, setPreviewFile] = useState<any>(null);
     
-    // 帮助模态框状态
-    const [showHelpModal, setShowHelpModal] = useState(false);
-    
     // 文件类型映射函数 - 根据文件夹类型映射到系统文件类型
     const mapACCFileType = (folderName: string) => {
       if (folderName.includes('Safety') || folderName.includes('Quality') || folderName.includes('Risk')) {
@@ -4324,172 +4321,6 @@ const DWSSBIMDashboard = () => {
         </div>
       );
     };
-
-    // 帮助模态框
-    const HelpModal = () => {
-      if (!showHelpModal) return null;
-      
-      return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-6xl max-h-[90vh] flex flex-col">
-            <div className="border-b px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center">
-                <Info className="w-6 h-6 mr-3 text-blue-600" />
-                <h2 className="text-xl font-semibold">DWSS-BIM Dashboard - 功能清单与操作指南</h2>
-              </div>
-              <button 
-                onClick={() => setShowHelpModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="px-6 py-4 flex-1 overflow-auto">
-              <div className="prose max-w-none">
-                
-                {/* 核心功能清单 */}
-                <section className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4 text-blue-600">🚀 核心功能清单</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-blue-800 mb-2">✅ BIM模型可视化</h4>
-                      <p className="text-sm text-gray-700">实时渲染、查看和操作3D模型</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-green-800 mb-2">✅ 多维度筛选</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• HYD Code筛选：按项目、承建商、位置等8个层级精确筛选</li>
-                        <li>• RISC表单筛选：按状态、创建者、日期范围筛选</li>
-                        <li>• 文件列表筛选：按名称、类型、上传者、日期范围筛选</li>
-                      </ul>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-purple-800 mb-2">✅ 数据联动高亮</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• 悬停RISC表单/文件，模型中对应构件自动高亮</li>
-                        <li>• 点击模型构件，对应文件/RISC表单自动高亮</li>
-                      </ul>
-                    </div>
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-yellow-800 mb-2">✅ 构件绑定系统</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• 绑定购物车：将文件和模型构件添加到购物车进行关联</li>
-                        <li>• 可视化绑定：在模型中选择构件，与文件进行绑定</li>
-                        <li>• 提交与版本管理：提交绑定，系统自动记录版本</li>
-                      </ul>
-                    </div>
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-indigo-800 mb-2">✅ 文件管理中心</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• 🗂️ 层级文件夹视图：类似Windows资源管理器界面</li>
-                        <li>• 👁️ 文件内容预览：上传前可预览文件内容</li>
-                        <li>• 🏷️ 自动类型匹配：上传时自动匹配正确文件类型</li>
-                        <li>• 文件编辑与删除：支持单个或批量操作</li>
-                      </ul>
-                    </div>
-                    <div className="bg-red-50 p-4 rounded-lg">
-                      <h4 className="font-medium text-red-800 mb-2">✅ 其他功能</h4>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• 模型构件树：层级列表形式展示所有构件</li>
-                        <li>• 右键快捷菜单：快速访问常用功能</li>
-                        <li>• 管理员面板：用户管理、活动日志</li>
-                      </ul>
-                    </div>
-                  </div>
-                </section>
-
-                {/* 快速操作指南 */}
-                <section className="mb-8">
-                  <h3 className="text-lg font-semibold mb-4 text-green-600">📖 快速操作指南</h3>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Search className="w-4 h-4 mr-2 text-blue-500" />
-                        筛选与搜索
-                      </h4>
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. 在左侧面板使用HYD Code筛选器，逐级选择项目、承建商、位置等</li>
-                        <li>2. 在RISC表单/文件列表顶部使用筛选框和搜索框</li>
-                        <li>3. 点击"清除"按钮可一键重置所有筛选</li>
-                      </ol>
-                    </div>
-
-                    <div className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Eye className="w-4 h-4 mr-2 text-purple-500" />
-                        BIM模型交互
-                      </h4>
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. <strong>单击：</strong>选中构件，左侧列表自动高亮关联项目</li>
-                        <li>2. <strong>多选：</strong>按住Ctrl键并单击选择多个构件</li>
-                        <li>3. <strong>右键：</strong>弹出快捷菜单，访问文件管理等功能</li>
-                      </ol>
-                    </div>
-
-                    <div className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Link className="w-4 h-4 mr-2 text-orange-500" />
-                        构件绑定流程
-                      </h4>
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. 在文件列表中点击文件的"绑定"图标</li>
-                        <li>2. 在模型中单击需要绑定的构件，构件将添加到购物车</li>
-                        <li>3. 确认后点击购物车底部的"提交绑定"按钮</li>
-                      </ol>
-                    </div>
-
-                    <div className="border rounded-lg p-4">
-                      <h4 className="font-medium text-gray-800 mb-3 flex items-center">
-                        <Upload className="w-4 h-4 mr-2 text-green-500" />
-                        从ACC添加文件
-                      </h4>
-                      <ol className="text-sm text-gray-700 space-y-2">
-                        <li>1. 右键构件选择"文件管理"，点击"添加文件"</li>
-                        <li>2. 使用文件夹视图浏览，点击👁️预览文件内容</li>
-                        <li>3. 勾选文件复选框，点击"下一步"→"开始上传"</li>
-                      </ol>
-                    </div>
-                  </div>
-                </section>
-
-                {/* 常见问题 */}
-                <section>
-                  <h3 className="text-lg font-semibold mb-4 text-red-600">❓ 常见问题</h3>
-                  <div className="space-y-4">
-                    <div className="border-l-4 border-blue-400 pl-4">
-                      <h4 className="font-medium text-gray-800">Q: 如何清除所有筛选和选择？</h4>
-                      <p className="text-sm text-gray-600 mt-1">A: 在左侧面板顶部点击"清除所有筛选和选择"按钮，可一键重置视图。</p>
-                    </div>
-                    <div className="border-l-4 border-green-400 pl-4">
-                      <h4 className="font-medium text-gray-800">Q: 为什么无法点击"提交绑定"按钮？</h4>
-                      <p className="text-sm text-gray-600 mt-1">A: 请确保绑定购物车中至少添加了一个文件和一个构件，两者都必须存在才能提交。</p>
-                    </div>
-                    <div className="border-l-4 border-yellow-400 pl-4">
-                      <h4 className="font-medium text-gray-800">Q: ACC文件类型不正确怎么办？</h4>
-                      <p className="text-sm text-gray-600 mt-1">A: 文件类型根据ACC文件夹自动映射。如需修改，可在文件成功添加后使用"编辑"功能手动修改。</p>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </div>
-            
-            <div className="border-t px-6 py-4 flex justify-between items-center">
-              <div className="text-sm text-gray-500">
-                💡 提示：您可以随时点击右上角的 "?" 按钮查看此帮助信息
-              </div>
-              <button 
-                onClick={() => setShowHelpModal(false)}
-                className="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700"
-              >
-                知道了
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    };
     
     return (
       <div className="fixed inset-0 bg-gray-50 z-50 flex flex-col">
@@ -4760,9 +4591,6 @@ const DWSSBIMDashboard = () => {
         
         {/* 文件预览模态框 */}
         <FilePreviewModal />
-        
-        {/* 帮助模态框 */}
-        <HelpModal />
       </div>
     );
   };
@@ -4998,13 +4826,6 @@ const DWSSBIMDashboard = () => {
               <Settings className="w-5 h-5" />
             </button>
           )}
-          <button 
-            onClick={() => setShowHelpModal(true)}
-            className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-            title="功能清单与操作指南"
-          >
-            <Info className="w-5 h-5" />
-          </button>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">当前用户:</span>
               <select
@@ -5885,9 +5706,6 @@ const DWSSBIMDashboard = () => {
       
       {/* 右键菜单 */}
       <ContextMenu />
-      
-      {/* 帮助模态框 */}
-      <HelpModal />
     </div>
   );
 };
