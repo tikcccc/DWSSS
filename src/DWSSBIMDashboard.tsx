@@ -1575,27 +1575,8 @@ const DWSSBIMDashboard = () => {
       setViewMode('historical');
     }
     
-    // 清除所有高光效果
-    setManualHighlightSet([]);  // 清除手动高光
-    setFilterHighlightSet([]); // 清除筛选高光
-    
-    // 清除当前选择和悬浮状态
-    setHoveredObjects([]);
-    setSelectedRISC(null);
-    setSelectedFile(null);
-    setHoveredItem(null);
-    setHoveredItemType(null);
-    
-    // 清除HyD Code筛选（如果有的话）
-    setHydCodeFilter({
-      project: 'HY202404',
-      contractor: '',
-      location: '',
-      structure: '',
-      space: '',
-      grid: '',
-      cat: ''
-    });
+    // 切换版本时，清除所有高光项和筛选项（相当于按了清除按钮）
+    clearAllUserSelections();
     
     // 如果在绑定模式，且有历史对象，需要特殊处理
     if (isBindingMode && bindingCart.hasHistoricalObjects) {
