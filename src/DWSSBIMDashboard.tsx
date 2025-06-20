@@ -450,6 +450,20 @@ const DWSSBIMDashboard = () => {
         volume: '19.1m³',
         status: 'history'
       }
+    },
+    // 新增删除条目示例 - RISC表单
+    { 
+      id: 'DEL0001-RISC-TMP-B-5-00001', 
+      requestNo: 'DEL0001-RISC-TMP-B-5-00001', 
+      updateDate: '2024-11-15', 
+      status: 'Approved', 
+      bindingStatus: 'history', 
+      linkedToCurrent: false, 
+      objects: ['TEMP-COL-B-999'], // 临时柱构件，已在最新版本中删除
+      createdBy: 'Sarah Wilson',
+      changes: ['临时柱构件已删除', '设计优化导致构件移除', 'RISC表单归档保存'],
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_C2', grid: 'ST_GE', cat: 'CONCRETE' },
+      boundModelVersionId: 'v1.8'
     }
   ]);
 
@@ -562,28 +576,45 @@ const DWSSBIMDashboard = () => {
     },
     { 
       id: 7, 
-      name: '0520 New Method Statement for Concrete Pouring.pdf', 
+      name: '0520 Old Method Statement for Concrete Pouring.pdf', 
       uploadDate: '2025-01-10', 
       updateDate: '2025-01-10', 
       type: 'Method Statement', 
-      bindingStatus: 'current', 
+      bindingStatus: 'history', 
       uploadedBy: 'John Doe', 
       linkedToCurrent: false, 
-      objects: [],
+      objects: ['DEL-COMP-001', 'DEL-COMP-002'], // 原本绑定的构件，但已在最新版本中删除
+      changes: ['构件已从最新版本中删除', '原关联构件：DEL-COMP-001、DEL-COMP-002'],
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       boundModelVersionId: 'v1.8'
     },
     { 
       id: 8, 
-      name: '0525 Unbound Safety Report.pdf', 
+      name: '0525 Obsolete Safety Report.pdf', 
       uploadDate: '2025-02-15', 
       updateDate: '2025-02-15', 
       type: 'Test Result', 
-      bindingStatus: 'current', 
+      bindingStatus: 'history', 
       uploadedBy: 'Administrator', 
       linkedToCurrent: false, 
-      objects: [],
+      objects: ['OLD-STEEL-BEAM-001'], // 原本绑定的钢梁构件，但已在最新版本中删除
+      changes: ['构件已从最新版本中删除', '原关联的钢梁构件在设计修改中被移除'],
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_B9', grid: 'ST_FE', cat: 'STEEL' },
+      boundModelVersionId: 'v1.8'
+    },
+    // 新增删除条目示例
+    { 
+      id: 9, 
+      name: '0530 Removed Foundation Inspection Report.pdf', 
+      uploadDate: '2024-12-01', 
+      updateDate: '2024-12-01', 
+      type: 'Inspection Report', 
+      bindingStatus: 'history', 
+      uploadedBy: 'Mike Johnson', 
+      linkedToCurrent: false, 
+      objects: ['TEMP-FOUND-101', 'TEMP-FOUND-102'], // 临时基础构件，已在最新版本中删除
+      changes: ['临时基础构件已删除', '设计变更导致构件移除', '相关检查报告保留存档'],
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_C1', grid: 'ST_GD', cat: 'CONCRETE' },
       boundModelVersionId: 'v1.8'
     }
   ]);
@@ -1069,6 +1100,39 @@ const DWSSBIMDashboard = () => {
     // 清除模型树高亮状态
     clearTreeHighlight();
     
+    // 检查是否是删除条目（历史绑定且构件已不存在）
+    if ('bindingStatus' in item && item.bindingStatus === 'history' && !item.linkedToCurrent) {
+      // 点击删除条目：显示历史视图浮窗但不高光任何构件（因为构件已不存在）
+      const boundModelVersionId = item.boundModelVersionId || 'v1.8'; // 绑定时的模型版本ID
+      const currentModelVersionId = 'current'; // 当前最新版本ID
+      
+      // 设置选中状态
+      setSelectedRISC(type === 'risc' ? item.id : null);
+      setSelectedFile(type === 'file' ? item.id : null);
+      setManualHighlightSet([]); // 不高光任何构件，因为构件已不存在
+      
+      // 显示浮窗，展示删除条目信息
+      const historicalInfo: HistoricalComponentInfo = {
+        componentId: item.objects.length > 0 ? item.objects[0] : 'DELETED-COMPONENT',
+        currentVersionId: currentModelVersionId,
+        historicalVersionId: boundModelVersionId,
+        fileInfo: item,
+        fileType: type as 'file' | 'risc',
+        changes: item.changes || ['构件已从最新版本中删除', '该条目关联的构件不再存在于当前模型中']
+      };
+      
+      // 显示浮窗
+      setFloatingPanel({
+        visible: true,
+        componentInfo: historicalInfo,
+        isHistoricalView: false // 初始显示当前视图
+      });
+      
+      // 保存原始模型版本
+      setOriginalModelVersion(selectedModelVersion);
+      return;
+    }
+
     // 检查是否是绑定历史构件的条目
     if ('bindingStatus' in item && item.bindingStatus === 'history' && item.linkedToCurrent) {
       // 点击绑定历史构件的条目：高光当前视图中相同构件ID的构件
@@ -1763,8 +1827,18 @@ const DWSSBIMDashboard = () => {
     }
   };
 
-  // 检查实际绑定状态 - 简化版本，只处理history和current状态
+  // 检查实际绑定状态 - 支持三种绑定状态：current、history、deleted
   const getActualBindingStatus = (item) => {
+    // 如果是历史绑定状态
+    if (item.bindingStatus === 'history') {
+      // 如果linkedToCurrent为false，表示构件在最新版本中已不存在 - 删除条目
+      if (!item.linkedToCurrent) {
+        return 'deleted';
+      }
+      // 如果linkedToCurrent为true，表示构件在最新版本中仍存在 - 历史条目
+      return 'history';
+    }
+    // 默认返回当前状态
     return item.bindingStatus;
   };
 
@@ -1773,6 +1847,7 @@ const DWSSBIMDashboard = () => {
     switch (actualStatus) {
       case 'current': return null;
       case 'history': return <Clock className="w-4 h-4 text-orange-500" />;
+      case 'deleted': return <Trash2 className="w-4 h-4 text-red-500" />;
       default: return null;
     }
   };
@@ -1782,6 +1857,7 @@ const DWSSBIMDashboard = () => {
     switch (actualStatus) {
       case 'current': return null;
       case 'history': return '历史版本关联';
+      case 'deleted': return '删除条目 - 构件已不存在';
       default: return null;
     }
   };
