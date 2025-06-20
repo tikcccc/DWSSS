@@ -274,7 +274,8 @@ const DWSSBIMDashboard = () => {
     status: '',
     startDate: '',
     endDate: '',
-    searchText: ''
+    searchText: '',
+    showCurrentModelBinding: false // 新增：只显示与当前模型绑定的条目
   });
   
   const [fileFilters, setFileFilters] = useState({
@@ -282,7 +283,8 @@ const DWSSBIMDashboard = () => {
     startDate: '',
     endDate: '',
     searchText: '',
-    showMyFiles: false
+    showMyFiles: false,
+    showCurrentModelBinding: false // 新增：只显示与当前模型绑定的条目
   });
 
   // 模型版本列表
@@ -698,7 +700,8 @@ const DWSSBIMDashboard = () => {
       status: '',
       startDate: '',
       endDate: '',
-      searchText: ''
+      searchText: '',
+      showCurrentModelBinding: false
     });
   };
 
@@ -708,7 +711,8 @@ const DWSSBIMDashboard = () => {
       startDate: '',
       endDate: '',
       searchText: '',
-      showMyFiles: false
+      showMyFiles: false,
+      showCurrentModelBinding: false
     });
   };
 
@@ -742,14 +746,16 @@ const DWSSBIMDashboard = () => {
       status: '',
       startDate: '',
       endDate: '',
-      searchText: ''
+      searchText: '',
+      showCurrentModelBinding: false
     });
     setFileFilters({
       type: '',
       startDate: '',
       endDate: '',
       searchText: '',
-      showMyFiles: false
+      showMyFiles: false,
+      showCurrentModelBinding: false
     });
     
     // 清除所有高光和选择状态
@@ -768,7 +774,8 @@ const DWSSBIMDashboard = () => {
       status: '',
       startDate: '',
       endDate: '',
-      searchText: ''
+      searchText: '',
+      showCurrentModelBinding: false
     });
     
     // 如果当前有RISC选中，也清除相关高光
@@ -791,7 +798,8 @@ const DWSSBIMDashboard = () => {
       startDate: '',
       endDate: '',
       searchText: '',
-      showMyFiles: false
+      showMyFiles: false,
+      showCurrentModelBinding: false
     });
     
     // 如果当前有文件选中，也清除相关高光
@@ -847,6 +855,12 @@ const DWSSBIMDashboard = () => {
       if (riscFilters.startDate && new Date(form.updateDate) < new Date(riscFilters.startDate)) return false;
       if (riscFilters.endDate && new Date(form.updateDate) > new Date(riscFilters.endDate)) return false;
       if (riscFilters.searchText && !form.requestNo.toLowerCase().includes(riscFilters.searchText.toLowerCase())) return false;
+      
+      // 当前模型绑定筛选：只显示与现在模型构建绑定的条目
+      if (riscFilters.showCurrentModelBinding) {
+        const actualStatus = getActualBindingStatus ? getActualBindingStatus(form) : form.bindingStatus;
+        if (actualStatus !== 'current') return false;
+      }
       
       return true;
     });
@@ -924,6 +938,12 @@ const DWSSBIMDashboard = () => {
       if (fileFilters.endDate && new Date(file.uploadDate) > new Date(fileFilters.endDate)) return false;
       if (fileFilters.searchText && !file.name.toLowerCase().includes(fileFilters.searchText.toLowerCase())) return false;
       if (fileFilters.showMyFiles && file.uploadedBy !== currentUser) return false;
+      
+      // 当前模型绑定筛选：只显示与现在模型构建绑定的条目
+      if (fileFilters.showCurrentModelBinding) {
+        const actualStatus = getActualBindingStatus ? getActualBindingStatus(file) : file.bindingStatus;
+        if (actualStatus !== 'current') return false;
+      }
       
       return true;
     });
@@ -5122,8 +5142,8 @@ const DWSSBIMDashboard = () => {
                 <h2 className="font-medium">筛选与管理</h2>
                 {/* 全局清除所有选择按钮 */}
                 {(hasHydCodeFilter() || selectedRISC || selectedFile || manualHighlightSet.length > 0 || 
-                  riscFilters.status || riscFilters.searchText || riscFilters.startDate || riscFilters.endDate ||
-                  fileFilters.type || fileFilters.searchText || fileFilters.startDate || fileFilters.endDate || fileFilters.showMyFiles) && (
+                  riscFilters.status || riscFilters.searchText || riscFilters.startDate || riscFilters.endDate || riscFilters.showCurrentModelBinding ||
+                  fileFilters.type || fileFilters.searchText || fileFilters.startDate || fileFilters.endDate || fileFilters.showMyFiles || fileFilters.showCurrentModelBinding) && (
                   <button
                     onClick={clearAllUserSelections}
                     className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 flex items-center"
@@ -5207,7 +5227,7 @@ const DWSSBIMDashboard = () => {
                       <FileText className="w-4 h-4 mr-2" />
                       RISC 表单
                     </h3>
-                    {(riscFilters.status || riscFilters.startDate || riscFilters.endDate || riscFilters.searchText || selectedRISC) && (
+                    {(riscFilters.status || riscFilters.startDate || riscFilters.endDate || riscFilters.searchText || riscFilters.showCurrentModelBinding || selectedRISC) && (
                       <button
                         onClick={clearAllRiscFiltersAndSelections}
                         className="text-xs text-red-600 hover:text-red-800"
@@ -5279,6 +5299,20 @@ const DWSSBIMDashboard = () => {
                         {riscFilters.endDate && `到: ${riscFilters.endDate}`}
                       </div>
                     )}
+                    
+                    {/* 当前模型绑定筛选 */}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="showCurrentModelBindingRisc"
+                        checked={riscFilters.showCurrentModelBinding}
+                        onChange={(e) => handleRiscFilterChange('showCurrentModelBinding', e.target.checked)}
+                        className="mr-2 rounded"
+                      />
+                      <label htmlFor="showCurrentModelBindingRisc" className="text-xs text-gray-700 cursor-pointer">
+                        只显示当前模型绑定
+                      </label>
+                    </div>
                   </div>
                   
                   {/* RISC 列表 */}
@@ -5639,7 +5673,7 @@ const DWSSBIMDashboard = () => {
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium">文件列表</h3>
                     <div className="flex items-center space-x-2">
-                      {(fileFilters.type || fileFilters.startDate || fileFilters.endDate || fileFilters.searchText || fileFilters.showMyFiles || selectedFile) && (
+                      {(fileFilters.type || fileFilters.startDate || fileFilters.endDate || fileFilters.searchText || fileFilters.showMyFiles || fileFilters.showCurrentModelBinding || selectedFile) && (
                         <button
                           onClick={clearAllFileFiltersAndSelections}
                           className="text-xs text-red-600 hover:text-red-800"
@@ -5686,10 +5720,10 @@ const DWSSBIMDashboard = () => {
                     </select>
                     
                     {/* 我上传的文件筛选 - 仅管理员和授权用户可见 */}
-              {!isViewOnlyUser() && (
+                    {!isViewOnlyUser() && (
                       <div className="flex items-center">
-                  <input
-                    type="checkbox"
+                        <input
+                          type="checkbox"
                           id="showMyFiles"
                           checked={fileFilters.showMyFiles}
                           onChange={(e) => handleFileFilterChange('showMyFiles', e.target.checked)}
@@ -5697,9 +5731,23 @@ const DWSSBIMDashboard = () => {
                         />
                         <label htmlFor="showMyFiles" className="text-xs text-gray-700 cursor-pointer">
                           我上传的文件
-                </label>
+                        </label>
                       </div>
-              )}
+                    )}
+                    
+                    {/* 当前模型绑定筛选 */}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="showCurrentModelBindingFile"
+                        checked={fileFilters.showCurrentModelBinding}
+                        onChange={(e) => handleFileFilterChange('showCurrentModelBinding', e.target.checked)}
+                        className="mr-2 rounded"
+                      />
+                      <label htmlFor="showCurrentModelBindingFile" className="text-xs text-gray-700 cursor-pointer">
+                        只显示当前模型绑定
+                      </label>
+                    </div>
               
                     {/* 日期筛选 - 日历图标 */}
                     <div className="flex items-center justify-between">
