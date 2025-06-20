@@ -3486,7 +3486,25 @@ const DWSSBIMDashboard = () => {
     // 为ACC文件添加文件夹结构的状态
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['04', '4.1', '4.10', '4.2', '4.3']));
     
-    // 模拟ACC平台的文件列表 - 按文件夹层级组织
+    // 文件内容查看功能的状态
+    const [showFilePreview, setShowFilePreview] = useState(false);
+    const [previewFile, setPreviewFile] = useState<any>(null);
+    
+    // 文件类型映射函数 - 根据文件夹类型映射到系统文件类型
+    const mapACCFileType = (folderName: string) => {
+      if (folderName.includes('Safety') || folderName.includes('Quality') || folderName.includes('Risk')) {
+        return '测试报告';
+      } else if (folderName.includes('Resources')) {
+        return '物料提交';
+      } else if (folderName.includes('Method Statements') || folderName.includes('Statutory Approvals')) {
+        return '施工方案';
+      } else if (folderName.includes('Materials') || folderName.includes('Surveys') || folderName.includes('Technical Reports') || folderName.includes('Models') || folderName.includes('Drawings')) {
+        return '施工图纸';
+      }
+      return '施工方案'; // 默认类型
+    };
+    
+    // 模拟ACC平台的文件列表 - 按文件夹层级组织，添加正确的文件类型
     const accFiles = {
       '04': {
         name: '04 Published [AC]',
@@ -3497,12 +3515,12 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-1', name: '1505-W-PHD-KFC-120-000105.pdf', type: 'pdf', size: '2.4MB', date: '2023-10-15' },
-                { id: 'acc-2', name: '1505-W-PHD-KFC-760-000003.pdf', type: 'pdf', size: '3.8MB', date: '2023-11-02' },
-                { id: 'acc-3', name: '1505-W-PHD-KFC-760-000004.pdf', type: 'pdf', size: '5.1MB', date: '2023-11-10' },
-                { id: 'acc-4', name: '1505-W-PHD-KFC-760-000044.pdf', type: 'pdf', size: '1.2MB', date: '2023-12-05' },
-                { id: 'acc-5', name: '1505-W-PHD-KFC-760-000050.pdf', type: 'pdf', size: '4.5MB', date: '2023-12-20' },
-                { id: 'acc-6', name: '1505-W-PHD-KFC-760-000057.pdf', type: 'pdf', size: '1.8MB', date: '2024-01-08' }
+                { id: 'acc-1', name: '1505-W-PHD-KFC-120-000105.pdf', type: '测试报告', size: '2.4MB', date: '2023-10-15', content: '这是一份安全质量风险评估报告...' },
+                { id: 'acc-2', name: '1505-W-PHD-KFC-760-000003.pdf', type: '测试报告', size: '3.8MB', date: '2023-11-02', content: '质量检测报告内容...' },
+                { id: 'acc-3', name: '1505-W-PHD-KFC-760-000004.pdf', type: '测试报告', size: '5.1MB', date: '2023-11-10', content: '风险评估分析报告...' },
+                { id: 'acc-4', name: '1505-W-PHD-KFC-760-000044.pdf', type: '测试报告', size: '1.2MB', date: '2023-12-05', content: '安全检查记录...' },
+                { id: 'acc-5', name: '1505-W-PHD-KFC-760-000050.pdf', type: '测试报告', size: '4.5MB', date: '2023-12-20', content: '质量验收报告...' },
+                { id: 'acc-6', name: '1505-W-PHD-KFC-760-000057.pdf', type: '测试报告', size: '1.8MB', date: '2024-01-08', content: '安全风险评估总结...' }
               ]
             }
           },
@@ -3511,8 +3529,8 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-7', name: '1505-W-PHD-KFC-760-000061.pdf', type: 'pdf', size: '18.5MB', date: '2024-01-15' },
-                { id: 'acc-8', name: '1505-W-PHD-KFC-760-000070.pdf', type: 'pdf', size: '2.7MB', date: '2024-02-01' }
+                { id: 'acc-7', name: '1505-W-PHD-KFC-760-000061.pdf', type: '施工方案', size: '18.5MB', date: '2024-01-15', content: '法定审批文件内容...' },
+                { id: 'acc-8', name: '1505-W-PHD-KFC-760-000070.pdf', type: '施工方案', size: '2.7MB', date: '2024-02-01', content: '施工许可证申请文件...' }
               ]
             }
           },
@@ -3521,7 +3539,7 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-9', name: '1505-W-PHD-KFC-760-000153.pdf', type: 'pdf', size: '3.2MB', date: '2024-02-10' }
+                { id: 'acc-9', name: '1505-W-PHD-KFC-760-000153.pdf', type: '物料提交', size: '3.2MB', date: '2024-02-10', content: '资源配置计划文档...' }
               ]
             }
           },
@@ -3530,10 +3548,10 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-10', name: '1505-W-PHD-KFC-785-000009.pdf', type: 'pdf', size: '6.8MB', date: '2024-02-15' },
-                { id: 'acc-11', name: '1831-W-PHD-KFC-410-000001.pdf', type: 'pdf', size: '4.1MB', date: '2024-02-20' },
-                { id: 'acc-12', name: '1831-W-PHD-KFC-760-000017.pdf', type: 'pdf', size: '2.9MB', date: '2024-02-25' },
-                { id: 'acc-13', name: '1831-W-PHD-KFC-760-000036.pdf', type: 'pdf', size: '3.5MB', date: '2024-03-01' }
+                { id: 'acc-10', name: '1505-W-PHD-KFC-785-000009.pdf', type: '施工方案', size: '6.8MB', date: '2024-02-15', content: '施工工艺说明书...' },
+                { id: 'acc-11', name: '1831-W-PHD-KFC-410-000001.pdf', type: '施工方案', size: '4.1MB', date: '2024-02-20', content: '方法声明文档...' },
+                { id: 'acc-12', name: '1831-W-PHD-KFC-760-000017.pdf', type: '施工方案', size: '2.9MB', date: '2024-02-25', content: '施工技术方案...' },
+                { id: 'acc-13', name: '1831-W-PHD-KFC-760-000036.pdf', type: '施工方案', size: '3.5MB', date: '2024-03-01', content: '工艺流程说明...' }
               ]
             }
           },
@@ -3644,24 +3662,37 @@ const DWSSBIMDashboard = () => {
                 {node.children.files && node.children.files.map((file) => (
                   <div 
                     key={file.id}
-                    className={`flex items-center py-2 px-3 cursor-pointer ${
+                    className={`flex items-center py-2 px-3 ${
                       selectedACCFiles.includes(file.id) ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-gray-50'
                     }`}
                     style={{ paddingLeft: `${paddingLeft + 32}px` }}
-                    onClick={() => toggleACCFileSelection(file.id)}
                   >
                     <input 
                       type="checkbox" 
                       checked={selectedACCFiles.includes(file.id)}
                       onChange={() => toggleACCFileSelection(file.id)}
                       className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      onClick={(e) => e.stopPropagation()}
+                      title={`选择文件: ${file.name}`}
                     />
                     <FileText className="w-4 h-4 mr-2 text-red-500" />
-                    <div className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => toggleACCFileSelection(file.id)}
+                    >
                       <div className="text-sm text-gray-900 truncate">{file.name}</div>
-                      <div className="text-xs text-gray-500">{file.size} • {file.date}</div>
+                      <div className="text-xs text-gray-500">{file.size} • {file.date} • {file.type}</div>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewFile(file);
+                        setShowFilePreview(true);
+                      }}
+                      className="ml-2 p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                      title="查看文件内容"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
@@ -4236,6 +4267,61 @@ const DWSSBIMDashboard = () => {
       );
     };
     
+    // 文件预览模态框
+    const FilePreviewModal = () => {
+      if (!showFilePreview || !previewFile) return null;
+      
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="border-b px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">{previewFile.name}</h2>
+                <p className="text-sm text-gray-600">{previewFile.type} • {previewFile.size} • {previewFile.date}</p>
+              </div>
+              <button 
+                onClick={() => setShowFilePreview(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="px-6 py-4 flex-1 overflow-auto">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-medium mb-3">文件内容预览</h3>
+                <div className="bg-white p-4 rounded border">
+                  <p className="text-gray-700 whitespace-pre-wrap">{previewFile.content}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="border-t px-6 py-4 flex justify-end space-x-3">
+              <button 
+                onClick={() => setShowFilePreview(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                关闭
+              </button>
+              <button 
+                onClick={() => {
+                  toggleACCFileSelection(previewFile.id);
+                  setShowFilePreview(false);
+                }}
+                className={`px-4 py-2 rounded-md text-white ${
+                  selectedACCFiles.includes(previewFile.id) 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {selectedACCFiles.includes(previewFile.id) ? '取消选择' : '选择文件'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+    
     return (
       <div className="fixed inset-0 bg-gray-50 z-50 flex flex-col">
         <div className="bg-white shadow-sm px-6 py-4 flex items-center">
@@ -4502,6 +4588,9 @@ const DWSSBIMDashboard = () => {
         
         {/* 编辑成功提示 */}
         <EditSuccessToast />
+        
+        {/* 文件预览模态框 */}
+        <FilePreviewModal />
       </div>
     );
   };
