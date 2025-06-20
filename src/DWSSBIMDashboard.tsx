@@ -200,6 +200,11 @@ const DWSSBIMDashboard = () => {
     isHistoricalView: false
   });
   
+  // 添加浮窗位置和拖拽状态
+  const [panelPosition, setPanelPosition] = useState({ x: 0, y: 100 }); // 相对于BIM视图的位置
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  
   // 添加原始模型版本状态，用于历史视图切换
   const [originalModelVersion, setOriginalModelVersion] = useState('current');
   
@@ -1027,12 +1032,13 @@ const DWSSBIMDashboard = () => {
     
     // 检查是否是绑定历史构件的条目
     if ('bindingStatus' in item && item.bindingStatus === 'history' && item.linkedToCurrent) {
-      // 点击绑定历史构件的条目：显示浮窗并高光对应构件
+      // 点击绑定历史构件的条目：显示浮窗并高光对应的当前构件
       const componentId = item.objects[0]; // 假设第一个关联的构件ID
-      const currentComponent = components.find(c => c.id === componentId);
+      // 查找当前模型中ID相同版本为current的构件
+      const currentComponent = components.find(c => c.id === componentId && c.version === 'current');
       
       if (currentComponent) {
-        // 高光对应的构件
+        // 高光对应的当前版本构件
         setManualHighlightSet([componentId]);
         setSelectedRISC(type === 'risc' ? item.id : null);
         setSelectedFile(type === 'file' ? item.id : null);
@@ -1621,7 +1627,7 @@ const DWSSBIMDashboard = () => {
       setViewMode(originalModelVersion === 'current' ? 'current' : 'historical');
     }
     
-    // 保持构件高光状态
+    // 保持构件高光状态 - 确保在历史视图中也高光对应的构件
     setManualHighlightSet([floatingPanel.componentInfo.componentId]);
   };
 
@@ -4823,6 +4829,40 @@ const DWSSBIMDashboard = () => {
 
   // ==================== 删除构件逻辑模块结束 ====================
 
+  // 浮窗拖拽处理函数
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - panelPosition.x,
+      y: e.clientY - panelPosition.y
+    });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging) {
+      setPanelPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // 添加全局鼠标事件监听
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
+
   // Render different views based on conditions
   if (currentView === 'login') return <LoginPage />;
   if (currentView === 'project-map') return <ProjectMapPage />;
@@ -5769,74 +5809,90 @@ const DWSSBIMDashboard = () => {
       
       {/* 历史视图浮窗 */}
       {floatingPanel.visible && floatingPanel.componentInfo && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-2xl border border-gray-300 z-50 w-96">
+        <div 
+          className="fixed bg-white bg-opacity-90 rounded-lg shadow-2xl border border-gray-300 z-50 cursor-move"
+          style={{
+            left: `${panelPosition.x}px`,
+            top: `${panelPosition.y}px`,
+            width: '320px',
+            height: '240px',
+            backdropFilter: 'blur(8px)'
+          }}
+          onMouseDown={handleMouseDown}
+        >
           {/* 标题栏 */}
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 bg-opacity-95 text-white px-3 py-2 rounded-t-lg flex items-center justify-between cursor-grab active:cursor-grabbing">
             <div className="flex items-center space-x-2">
-              <History className="w-5 h-5" />
-              <span className="font-semibold text-sm">
+              <History className="w-4 h-4" />
+              <span className="font-semibold text-xs">
                 {floatingPanel.isHistoricalView ? '历史视图模式' : '当前视图模式'}
               </span>
             </div>
             <button 
-              onClick={handleCloseFloatingPanel}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseFloatingPanel();
+              }}
               className="text-white hover:bg-white hover:bg-opacity-20 rounded p-1"
               title="关闭浮窗"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3" />
             </button>
           </div>
           
           {/* 内容区域 */}
-          <div className="p-4 space-y-4">
+          <div className="p-3 space-y-2 text-xs">
             {/* 构件信息 */}
-            <div className="border-b pb-3">
-              <h4 className="font-semibold text-gray-800 mb-2">构件信息</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <div>构件ID: <span className="font-mono">{floatingPanel.componentInfo.componentId}</span></div>
-                <div>当前版本: <span className="font-mono">{floatingPanel.componentInfo.currentVersionId}</span></div>
-                <div>历史版本: <span className="font-mono">{floatingPanel.componentInfo.historicalVersionId}</span></div>
+            <div className="border-b border-gray-200 pb-2">
+              <h4 className="font-semibold text-gray-800 mb-1 text-xs">构件信息</h4>
+              <div className="text-gray-600 space-y-0.5">
+                <div>构件ID: <span className="font-mono text-xs">{floatingPanel.componentInfo.componentId}</span></div>
+                <div>当前版本: <span className="font-mono text-xs">{floatingPanel.componentInfo.currentVersionId}</span></div>
+                <div>历史版本: <span className="font-mono text-xs">{floatingPanel.componentInfo.historicalVersionId}</span></div>
               </div>
             </div>
             
             {/* 文件信息 */}
-            <div className="border-b pb-3">
-              <h4 className="font-semibold text-gray-800 mb-2">
+            <div className="border-b border-gray-200 pb-2">
+              <h4 className="font-semibold text-gray-800 mb-1 text-xs">
                 {floatingPanel.componentInfo.fileType === 'file' ? '关联文件' : '关联RISC表单'}
               </h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <div>名称: <span className="font-medium">{floatingPanel.componentInfo.fileInfo.name || (floatingPanel.componentInfo.fileInfo as RiscForm).requestNo}</span></div>
+              <div className="text-gray-600 space-y-0.5">
+                <div className="truncate">名称: <span className="font-medium">{floatingPanel.componentInfo.fileInfo.name || (floatingPanel.componentInfo.fileInfo as RiscForm).requestNo}</span></div>
                 <div>更新时间: <span>{floatingPanel.componentInfo.fileInfo.updateDate || (floatingPanel.componentInfo.fileInfo as FileItem).uploadDate}</span></div>
               </div>
             </div>
             
             {/* 变更说明 */}
-            <div className="border-b pb-3">
-              <h4 className="font-semibold text-gray-800 mb-2">变更说明</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                {floatingPanel.componentInfo.changes.map((change, index) => (
-                  <div key={index} className="flex items-start space-x-2">
-                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
-                    <span>{change}</span>
+            <div className="border-b border-gray-200 pb-2">
+              <h4 className="font-semibold text-gray-800 mb-1 text-xs">变更说明</h4>
+              <div className="text-gray-600 space-y-0.5 max-h-12 overflow-y-auto">
+                {floatingPanel.componentInfo.changes.slice(0, 2).map((change, index) => (
+                  <div key={index} className="flex items-start space-x-1">
+                    <span className="w-1 h-1 bg-blue-500 rounded-full mt-1 flex-shrink-0"></span>
+                    <span className="text-xs">{change}</span>
                   </div>
                 ))}
               </div>
             </div>
             
             {/* 操作按钮 */}
-            <div className="flex justify-between items-center pt-2">
+            <div className="flex justify-between items-center pt-1">
               <button 
-                onClick={handleToggleHistoricalView}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleHistoricalView();
+                }}
+                className="flex items-center space-x-1 bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors text-xs"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-3 h-3" />
                 <span>
-                  {floatingPanel.isHistoricalView ? '切换到当前视图' : '切换到历史视图'}
+                  {floatingPanel.isHistoricalView ? '切换到当前' : '切换到历史'}
                 </span>
               </button>
               
               <div className="text-xs text-gray-500">
-                {floatingPanel.isHistoricalView ? '正在查看历史模型' : '正在查看当前模型'}
+                {floatingPanel.isHistoricalView ? '历史模型' : '当前模型'}
               </div>
             </div>
           </div>
