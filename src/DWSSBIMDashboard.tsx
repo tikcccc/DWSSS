@@ -1621,14 +1621,29 @@ const DWSSBIMDashboard = () => {
       // 切换到历史视图模式
       setSelectedModelVersion(floatingPanel.componentInfo.historicalVersionId);
       setViewMode('historical');
+      
+      // 在历史视图中，高光绑定的构件
+      // 由于历史构件绑定通常保持相同的构件ID，我们直接高光这个ID
+      setManualHighlightSet([floatingPanel.componentInfo.componentId]);
     } else {
       // 切换回当前视图模式
       setSelectedModelVersion(originalModelVersion);
       setViewMode(originalModelVersion === 'current' ? 'current' : 'historical');
+      
+      // 在当前视图中，高光对应的当前版本构件
+      // 查找ID相同版本为current的构件，如果找不到则高光原ID
+      const currentComponent = components.find(c => 
+        c.id === floatingPanel.componentInfo.componentId && 
+        c.version === 'current'
+      );
+      
+      if (currentComponent) {
+        setManualHighlightSet([currentComponent.id]);
+      } else {
+        // 如果找不到当前版本构件，仍然尝试高光相同ID的构件
+        setManualHighlightSet([floatingPanel.componentInfo.componentId]);
+      }
     }
-    
-    // 保持构件高光状态 - 确保在历史视图中也高光对应的构件
-    setManualHighlightSet([floatingPanel.componentInfo.componentId]);
   };
 
   // 关闭历史视图浮窗
