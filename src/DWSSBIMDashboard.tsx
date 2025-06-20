@@ -288,10 +288,7 @@ const DWSSBIMDashboard = () => {
   // 模型版本列表
   const modelVersions: ModelVersion[] = [
     { value: 'current', label: '当前版本 (Latest)', date: '2025-03-08' },
-    { value: 'v2.5', label: 'Version 2.5', date: '2025-02-20' },
-    { value: 'v2.0', label: 'Version 2.0', date: '2025-01-15' },
-    { value: 'v1.8', label: 'Version 1.8', date: '2024-12-10' },
-    { value: 'v1.5', label: 'Version 1.5', date: '2024-11-05' }
+    { value: 'v1.8', label: 'Version 1.8', date: '2024-12-10' }
   ];
 
   // 模拟数据 - 单个构件（替换对象组）
