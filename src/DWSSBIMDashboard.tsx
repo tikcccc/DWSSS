@@ -2904,8 +2904,7 @@ const DWSSBIMDashboard = () => {
     // 获取所有高亮的构件对象
     const highlightedComponents = components.filter(comp => 
       finalHighlightSet.includes(comp.id) && 
-      (selectedModelVersion === 'current' ? comp.version === 'current' : 
-       comp.version === selectedModelVersion || comp.version === 'v1.8')
+      comp.modelVersionId === selectedModelVersion
     );
 
     if (highlightedComponents.length === 0) {
