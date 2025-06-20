@@ -3483,17 +3483,195 @@ const DWSSBIMDashboard = () => {
     // 固定的文件类型选项
     const fileTypes = ['施工方案', '物料提交', '施工图纸', '测试报告'];
     
-    // 模拟ACC平台的文件列表
-    const accFiles = [
-      { id: 'acc-1', name: '结构设计图纸.dwg', type: '施工图纸', size: '2.4MB', date: '2023-10-15' },
-      { id: 'acc-2', name: '基础施工方案.pdf', type: '施工方案', size: '3.8MB', date: '2023-11-02' },
-      { id: 'acc-3', name: '钢筋布置图.dwg', type: '施工图纸', size: '5.1MB', date: '2023-11-10' },
-      { id: 'acc-4', name: '施工进度报告.xlsx', type: '测试报告', size: '1.2MB', date: '2023-12-05' },
-      { id: 'acc-5', name: '质量检查记录.pdf', type: '测试报告', size: '4.5MB', date: '2023-12-20' },
-      { id: 'acc-6', name: '设计变更说明.docx', type: '施工方案', size: '1.8MB', date: '2024-01-08' },
-      { id: 'acc-7', name: '材料清单.rvt', type: '物料提交', size: '18.5MB', date: '2024-01-15' },
-      { id: 'acc-8', name: '项目计划书.pdf', type: '施工方案', size: '2.7MB', date: '2024-02-01' }
-    ];
+    // 为ACC文件添加文件夹结构的状态
+    const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['04', '4.1', '4.10', '4.2', '4.3']));
+    
+    // 模拟ACC平台的文件列表 - 按文件夹层级组织
+    const accFiles = {
+      '04': {
+        name: '04 Published [AC]',
+        type: 'folder',
+        children: {
+          '4.1': {
+            name: '4.1 Safety, Quality & Risk',
+            type: 'folder',
+            children: {
+              'files': [
+                { id: 'acc-1', name: '1505-W-PHD-KFC-120-000105.pdf', type: 'pdf', size: '2.4MB', date: '2023-10-15' },
+                { id: 'acc-2', name: '1505-W-PHD-KFC-760-000003.pdf', type: 'pdf', size: '3.8MB', date: '2023-11-02' },
+                { id: 'acc-3', name: '1505-W-PHD-KFC-760-000004.pdf', type: 'pdf', size: '5.1MB', date: '2023-11-10' },
+                { id: 'acc-4', name: '1505-W-PHD-KFC-760-000044.pdf', type: 'pdf', size: '1.2MB', date: '2023-12-05' },
+                { id: 'acc-5', name: '1505-W-PHD-KFC-760-000050.pdf', type: 'pdf', size: '4.5MB', date: '2023-12-20' },
+                { id: 'acc-6', name: '1505-W-PHD-KFC-760-000057.pdf', type: 'pdf', size: '1.8MB', date: '2024-01-08' }
+              ]
+            }
+          },
+          '4.10': {
+            name: '4.10 Statutory Approvals',
+            type: 'folder',
+            children: {
+              'files': [
+                { id: 'acc-7', name: '1505-W-PHD-KFC-760-000061.pdf', type: 'pdf', size: '18.5MB', date: '2024-01-15' },
+                { id: 'acc-8', name: '1505-W-PHD-KFC-760-000070.pdf', type: 'pdf', size: '2.7MB', date: '2024-02-01' }
+              ]
+            }
+          },
+          '4.2': {
+            name: '4.2 Resources',
+            type: 'folder',
+            children: {
+              'files': [
+                { id: 'acc-9', name: '1505-W-PHD-KFC-760-000153.pdf', type: 'pdf', size: '3.2MB', date: '2024-02-10' }
+              ]
+            }
+          },
+          '4.3': {
+            name: '4.3 Method Statements',
+            type: 'folder',
+            children: {
+              'files': [
+                { id: 'acc-10', name: '1505-W-PHD-KFC-785-000009.pdf', type: 'pdf', size: '6.8MB', date: '2024-02-15' },
+                { id: 'acc-11', name: '1831-W-PHD-KFC-410-000001.pdf', type: 'pdf', size: '4.1MB', date: '2024-02-20' },
+                { id: 'acc-12', name: '1831-W-PHD-KFC-760-000017.pdf', type: 'pdf', size: '2.9MB', date: '2024-02-25' },
+                { id: 'acc-13', name: '1831-W-PHD-KFC-760-000036.pdf', type: 'pdf', size: '3.5MB', date: '2024-03-01' }
+              ]
+            }
+          },
+          '4.4': {
+            name: '4.4 Materials',
+            type: 'folder',
+            children: {
+              'files': []
+            }
+          },
+          '4.5': {
+            name: '4.5 Surveys',
+            type: 'folder',
+            children: {
+              'files': []
+            }
+          },
+          '4.6': {
+            name: '4.6 Technical Reports',
+            type: 'folder',
+            children: {
+              'files': []
+            }
+          },
+          '4.7': {
+            name: '4.7 Models',
+            type: 'folder',
+            children: {
+              'files': []
+            }
+          },
+          '4.8': {
+            name: '4.8 Drawings',
+            type: 'folder',
+            children: {
+              'files': []
+            }
+          }
+        }
+      }
+    };
+
+    // 获取所有文件用于选择
+    const getAllACCFiles = () => {
+      const allFiles = [];
+      const traverse = (node) => {
+        if (node.children) {
+          if (node.children.files) {
+            allFiles.push(...node.children.files);
+          }
+          Object.values(node.children).forEach(child => {
+            if (child.children) traverse(child);
+          });
+        }
+      };
+      Object.values(accFiles).forEach(traverse);
+      return allFiles;
+    };
+
+    const toggleFolder = (folderId: string) => {
+      setExpandedFolders(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(folderId)) {
+          newSet.delete(folderId);
+        } else {
+          newSet.add(folderId);
+        }
+        return newSet;
+      });
+    };
+
+    const renderFileTree = (node: any, nodeId: string, level: number = 0) => {
+      const isExpanded = expandedFolders.has(nodeId);
+      const paddingLeft = level * 20;
+
+      if (node.type === 'folder') {
+        return (
+          <div key={nodeId}>
+            <div 
+              className="flex items-center py-2 px-3 hover:bg-gray-50 cursor-pointer"
+              style={{ paddingLeft: `${paddingLeft + 12}px` }}
+              onClick={() => toggleFolder(nodeId)}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 mr-2 text-gray-500" />
+              ) : (
+                <ChevronRight className="w-4 h-4 mr-2 text-gray-500" />
+              )}
+              <Folder className="w-4 h-4 mr-2 text-blue-500" />
+              <span className="text-sm font-medium text-gray-700">{node.name}</span>
+              {node.children?.files && (
+                <span className="ml-auto text-xs text-gray-500">
+                  ({node.children.files.length})
+                </span>
+              )}
+            </div>
+            
+            {isExpanded && node.children && (
+              <div>
+                {/* 渲染子文件夹 */}
+                {Object.entries(node.children).map(([childId, child]) => {
+                  if (childId !== 'files') {
+                    return renderFileTree(child, childId, level + 1);
+                  }
+                })}
+                
+                {/* 渲染文件 */}
+                {node.children.files && node.children.files.map((file) => (
+                  <div 
+                    key={file.id}
+                    className={`flex items-center py-2 px-3 cursor-pointer ${
+                      selectedACCFiles.includes(file.id) ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-gray-50'
+                    }`}
+                    style={{ paddingLeft: `${paddingLeft + 32}px` }}
+                    onClick={() => toggleACCFileSelection(file.id)}
+                  >
+                    <input 
+                      type="checkbox" 
+                      checked={selectedACCFiles.includes(file.id)}
+                      onChange={() => toggleACCFileSelection(file.id)}
+                      className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <FileText className="w-4 h-4 mr-2 text-red-500" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-gray-900 truncate">{file.name}</div>
+                      <div className="text-xs text-gray-500">{file.size} • {file.date}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+      
+      return null;
+    };
     
     const getAssociatedFiles = () => {
       if (selectedComponentsForFiles.length === 0) return [];
@@ -3632,8 +3810,9 @@ const DWSSBIMDashboard = () => {
     
     const completeUpload = () => {
       // 模拟添加新文件到列表
+      const allACCFiles = getAllACCFiles();
       const newFiles = selectedACCFiles.map((fileId, index) => {
-        const accFile = accFiles.find(f => f.id === fileId);
+        const accFile = allACCFiles.find(f => f.id === fileId);
         return {
           id: files.length + index + 1,
           name: accFile?.name || '未命名文件',
@@ -3779,7 +3958,7 @@ const DWSSBIMDashboard = () => {
       
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] flex flex-col">
             <div className="border-b px-6 py-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold">从ACC平台添加文件</h2>
               <button 
@@ -3790,9 +3969,9 @@ const DWSSBIMDashboard = () => {
               </button>
             </div>
             
-            <div className="px-6 py-4">
+            <div className="px-6 py-4 flex-1 overflow-hidden">
               {/* 步骤指示器 */}
-              <div className="flex items-center mb-8">
+              <div className="flex items-center mb-6">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${uploadStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                   1
                 </div>
@@ -3808,57 +3987,21 @@ const DWSSBIMDashboard = () => {
               
               {/* 步骤内容 */}
               {uploadStep === 1 && (
-                <div>
-                  <h3 className="text-lg font-medium mb-4">选择ACC平台文件</h3>
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            选择
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            文件名
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            类型
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            大小
-                          </th>
-                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            修改日期
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {accFiles.map((file) => (
-                          <tr 
-                            key={file.id}
-                            className={selectedACCFiles.includes(file.id) ? 'bg-blue-50' : 'hover:bg-gray-50'}
-                            onClick={() => toggleACCFileSelection(file.id)}
-                          >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <input 
-                                type="checkbox" 
-                                checked={selectedACCFiles.includes(file.id)}
-                                onChange={() => toggleACCFileSelection(file.id)}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              />
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <FileText className="w-4 h-4 mr-2 text-gray-400" />
-                                <span>{file.name}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">{file.type}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{file.size}</td>
-                            <td className="px-6 py-4 whitespace-nowrap">{file.date}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium">选择ACC平台文件</h3>
+                    <div className="text-sm text-gray-600">
+                      已选择 {selectedACCFiles.length} 个文件
+                    </div>
+                  </div>
+                  
+                  {/* 文件树容器 */}
+                  <div className="border rounded-lg bg-white overflow-auto" style={{ height: '400px' }}>
+                    <div className="py-2">
+                      {Object.entries(accFiles).map(([nodeId, node]) => 
+                        renderFileTree(node, nodeId, 0)
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -3870,7 +4013,8 @@ const DWSSBIMDashboard = () => {
                     <p className="text-gray-600 mb-2">已选择 {selectedACCFiles.length} 个文件</p>
                     <ul className="border rounded-lg p-3 mb-4 max-h-40 overflow-y-auto">
                       {selectedACCFiles.map(fileId => {
-                        const file = accFiles.find(f => f.id === fileId);
+                        const allFiles = getAllACCFiles();
+                        const file = allFiles.find(f => f.id === fileId);
                         return (
                           <li key={fileId} className="flex items-center py-1">
                             <FileText className="w-4 h-4 mr-2 text-gray-400" />
