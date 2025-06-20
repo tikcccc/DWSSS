@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, Search, Filter, Plus, Eye, Edit, Trash2, Settings, Download, Upload, Link, Users, Activity, Home, Menu, X, CheckCircle, AlertCircle, Clock, FileText, Folder, Calendar, GitCompare, Info, ArrowLeft, ChevronRight, ArrowRight, List, Layers, ChevronsLeft, ChevronsRight, ShoppingCart, Target, Mail, History, Lock } from 'lucide-react';
+import { ChevronDown, Search, Filter, Plus, Eye, Edit, Trash2, Settings, Download, Upload, Link, Users, Activity, Home, Menu, X, CheckCircle, AlertCircle, Clock, FileText, Folder, Calendar, GitCompare, Info, HelpCircle, ArrowLeft, ChevronRight, ArrowRight, List, Layers, ChevronsLeft, ChevronsRight, ShoppingCart, Target, Mail, History, Lock } from 'lucide-react';
+import userGuideContent from '../USER_GUIDE.md?raw';
 
 // 错误边界组件
 class ErrorBoundaryComponent extends React.Component {
@@ -173,6 +174,7 @@ const DWSSBIMDashboard = () => {
   const [treeWhiteComponents, setTreeWhiteComponents] = useState<string[]>([]); // 白色显示的构件ID列表
   const [treeWhiteGroups, setTreeWhiteGroups] = useState<string[]>([]); // 白色显示的组名列表
   const [treeShowAllWhite, setTreeShowAllWhite] = useState(true); // 是否所有都显示为白色（初始状态）
+  const [showUserGuide, setShowUserGuide] = useState(false); // 用户指南弹窗状态
   
   // 右键菜单状态
   const [contextMenu, setContextMenu] = useState<{
@@ -4860,6 +4862,14 @@ const DWSSBIMDashboard = () => {
           >
             退出登录
           </button>
+          {/* User Guide Button */}
+          <button 
+            onClick={() => setShowUserGuide(true)}
+            className="p-2 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            title="用户指南 / 帮助"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
@@ -5706,6 +5716,25 @@ const DWSSBIMDashboard = () => {
       
       {/* 右键菜单 */}
       <ContextMenu />
+      {/* Place UserGuideModal at root */}
+      {showUserGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] flex flex-col">
+            <div className="border-b px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-semibold flex items-center"><HelpCircle className="w-5 h-5 mr-2" />用户指南</h2>
+              <button 
+                onClick={() => setShowUserGuide(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 py-4 flex-1 overflow-auto">
+              <pre className="whitespace-pre-wrap text-sm text-gray-800">{userGuideContent}</pre>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
