@@ -1270,61 +1270,49 @@ const DWSSBIMDashboard = () => {
 
   // 开始新的绑定关系（针对无绑定的文件）- 取消文件锁定设计
   const addToBindingCart = (item: FileItem, type: string): void => {
-    if (type !== 'file') return;
-
-    // 权限检查
-    if (!hasBindingPermission()) {
-      alert('您没有权限创建绑定关系');
+    // 历史视图下不允许进入绑定模式
+    if (viewMode === 'historical') {
+      alert('历史视图下不允许进入绑定模式。请先切换到当前版本后再开始绑定。');
       return;
     }
-
-    if (currentUser !== 'Administrator' && item.uploadedBy !== currentUser) {
-      alert('您只能为自己上传的文件创建绑定关系');
-      return;
-    }
-
-    // 取消文件锁定逻辑 - 直接允许切换文件
     
-    // 检查文件是否已有绑定
+    // 检查用户权限
+    if (!hasBindingPermission()) {
+      alert('您没有权限进行绑定操作');
+      return;
+    }
+
+    // 如果是要编辑的文件，检查是否有权限编辑
     if (item.objects.length > 0) {
-      const confirmEdit = confirm(`文件"${item.name.substring(0, 30)}..."已有现有绑定关系。\n\n是否要编辑现有绑定？点击"确定"进入编辑模式，"取消"创建新绑定。`);
-      if (confirmEdit) {
-        editExistingBinding(item);
+      if (item.uploadedBy !== currentUser && !isAdmin()) {
+        alert('您只能编辑自己上传的文件');
         return;
       }
     }
 
-    // 切换到新文件 - 不再锁定文件
-    setBindingCart({
-      files: [item],
-      objects: [],
-      hasHistoricalObjects: false
-    });
-
-    // 清除现有高亮
-    setManualHighlightSet([]);
-    setFilterHighlightSet([]);
-    setHydCodeFilter({
-      project: 'HY202404',
-      contractor: '',
-      location: '',
-      structure: '',
-      space: '',
-      grid: '',
-      cat: ''
-    });
+    // 检查是否已在绑定模式中且有不同文件
+    if (isBindingMode && bindingCart.files.length === 1 && bindingCart.files[0].id !== item.id) {
+      if (confirm('当前绑定购物车中已有其他文件。是否清空购物车并开始新的绑定？')) {
+        exitBindingMode();
+      } else {
+        return;
+      }
+    }
 
     // 进入绑定模式
     setIsBindingMode(true);
-
-    // 如果文件是历史版本，切换到历史视图
-    if (item.bindingStatus === 'history') {
-      setSelectedModelVersion('v1.8');
-      setViewMode('historical');
-    }
-
-    // 成功提示
-    alert(`开始新的绑定关系\n\n文件："${item.name.substring(0, 40)}..."\n\n请使用筛选功能或手动选择来高亮需要绑定的构件，然后点击"添加所有高亮构件"按钮。`);
+    setBindingCart({
+      files: [item],
+      objects: [...item.objects.map(objId => components.find(c => c.id === objId)).filter(Boolean)] as Component[],
+      hasHistoricalObjects: item.objects.some(objId => {
+        const obj = components.find(c => c.id === objId);
+        return obj && obj.version !== 'current';
+      })
+    });
+    setShowBindingCart(true);
+    
+    // 高光绑定文件相关的构件
+    setManualHighlightSet(item.objects);
   };
 
   // 添加对象到购物车
@@ -1568,6 +1556,12 @@ const DWSSBIMDashboard = () => {
 
   // 处理模型版本变化
   const handleModelVersionChange = (version) => {
+    // 绑定模式下不允许切换到历史版本
+    if (isBindingMode && version !== 'current') {
+      alert('绑定模式下不允许切换到历史版本。请先退出绑定模式后再切换版本。');
+      return;
+    }
+    
     setSelectedModelVersion(version);
     if (version === 'current') {
       setViewMode('current');
@@ -5227,8 +5221,13 @@ const DWSSBIMDashboard = () => {
                       title="选择模型版本"
                     >
                       {modelVersions.map(version => (
-                        <option key={version.value} value={version.value}>
+                        <option 
+                          key={version.value} 
+                          value={version.value}
+                          disabled={isBindingMode && version.value !== 'current'}
+                        >
                           {version.label} - {version.date}
+                          {isBindingMode && version.value !== 'current' && ' (绑定模式下不可用)'}
                         </option>
                       ))}
                     </select>
@@ -5709,10 +5708,15 @@ const DWSSBIMDashboard = () => {
                                       <button 
                                         onClick={(e) => {
                                           e.stopPropagation();
+                                          if (viewMode === 'historical') {
+                                            alert('历史视图下不允许进入绑定模式。请先切换到当前版本后再开始绑定。');
+                                            return;
+                                          }
                                           editExistingBinding(file);
                                         }}
-                                        className="text-green-600 hover:text-green-800 p-1"
-                                        title="修改绑定关系"
+                                        className={`p-1 ${viewMode === 'historical' ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-800'}`}
+                                        title={viewMode === 'historical' ? '历史视图下不可用' : '修改绑定关系'}
+                                        disabled={viewMode === 'historical'}
                                       >
                                         <Link className="w-4 h-4" />
                                       </button>
@@ -5725,8 +5729,9 @@ const DWSSBIMDashboard = () => {
                                           e.stopPropagation();
                                           addToBindingCart(file, 'file');
                                         }}
-                                        className="text-orange-600 hover:text-orange-800 p-1"
-                                        title="开始绑定关系"
+                                        className={`p-1 ${viewMode === 'historical' ? 'text-gray-400 cursor-not-allowed' : 'text-orange-600 hover:text-orange-800'}`}
+                                        title={viewMode === 'historical' ? '历史视图下不可用' : '开始绑定关系'}
+                                        disabled={viewMode === 'historical'}
                                       >
                                         <Link className="w-4 h-4" />
                                       </button>
