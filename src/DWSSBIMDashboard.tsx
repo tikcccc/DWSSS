@@ -783,8 +783,27 @@ const DWSSBIMDashboard = () => {
   const getFilteredRiscForms = () => {
     let allRiscForms = riscForms;
     
-    // 历史视图模式：只显示与当前浮窗构件相关的条目
-    if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
+    // 历史版本视图模式：只显示构件ID和版本ID同时满足的条目
+    if (viewMode === 'historical' && selectedModelVersion !== 'current') {
+      // 获取当前历史视图中的构件ID列表
+      const currentViewComponentIds = components
+        .filter(c => c.modelVersionId === selectedModelVersion)
+        .map(c => c.id);
+      
+      allRiscForms = riscForms.filter(form => {
+        // 检查条目的绑定构件ID是否在当前历史视图中存在
+        const hasMatchingComponents = form.objects.some(objId => 
+          currentViewComponentIds.includes(objId)
+        );
+        
+        // 检查条目的绑定版本ID是否与当前选择的历史版本匹配
+        const hasMatchingVersion = form.boundModelVersionId === selectedModelVersion;
+        
+        // 只有同时满足构件ID和版本ID条件的条目才显示
+        return hasMatchingComponents && hasMatchingVersion;
+      });
+    } else if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
+      // 浮窗历史视图模式：只显示与当前浮窗构件相关的条目
       allRiscForms = riscForms.filter(form => 
         form.objects.includes(floatingPanel.componentInfo!.componentId) ||
         (form.bindingStatus === 'history' && form.linkedToCurrent)
