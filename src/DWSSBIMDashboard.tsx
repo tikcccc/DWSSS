@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronDown, Search, Filter, Plus, Eye, Edit, Trash2, Settings, Download, Upload, Link, Users, Activity, Home, Menu, X, CheckCircle, AlertCircle, Clock, FileText, Folder, Calendar, GitCompare, Info, HelpCircle, ArrowLeft, ChevronRight, ArrowRight, List, Layers, ChevronsLeft, ChevronsRight, ShoppingCart, Target, Mail, History, Lock } from 'lucide-react';
+import { ChevronDown, Search, Filter, Plus, Eye, Edit, Trash2, Settings, Download, Upload, Link, Users, Activity, Home, Menu, X, CheckCircle, AlertCircle, Clock, FileText, Folder, Calendar, GitCompare, Info, HelpCircle, ArrowLeft, ChevronRight, ArrowRight, List, Layers, ChevronsLeft, ChevronsRight, ShoppingCart, Target, Mail, History, Lock, RefreshCw } from 'lucide-react';
 import userGuideContent from '../USER_GUIDE.md?raw';
 
 // 错误边界组件
@@ -148,6 +148,23 @@ interface BindingCart {
   hasHistoricalObjects: boolean;
 }
 
+// 添加历史构件信息接口
+interface HistoricalComponentInfo {
+  componentId: string;
+  currentVersionId: string;
+  historicalVersionId: string;
+  fileInfo: FileItem | RiscForm;
+  fileType: 'file' | 'risc';
+  changes: string[];
+}
+
+// 添加浮窗状态接口
+interface FloatingPanel {
+  visible: boolean;
+  componentInfo: HistoricalComponentInfo | null;
+  isHistoricalView: boolean; // 当前是否在历史视图模式
+}
+
 const DWSSBIMDashboard = () => {
   const [currentUser, setCurrentUser] = useState('Administrator');
   const [selectedProject, setSelectedProject] = useState('HY202404');
@@ -175,6 +192,16 @@ const DWSSBIMDashboard = () => {
   const [treeWhiteGroups, setTreeWhiteGroups] = useState<string[]>([]); // 白色显示的组名列表
   const [treeShowAllWhite, setTreeShowAllWhite] = useState(true); // 是否所有都显示为白色（初始状态）
   const [showUserGuide, setShowUserGuide] = useState(false); // 用户指南弹窗状态
+  
+  // 添加历史视图相关状态
+  const [floatingPanel, setFloatingPanel] = useState<FloatingPanel>({
+    visible: false,
+    componentInfo: null,
+    isHistoricalView: false
+  });
+  
+  // 添加原始模型版本状态，用于历史视图切换
+  const [originalModelVersion, setOriginalModelVersion] = useState('current');
   
   // 右键菜单状态
   const [contextMenu, setContextMenu] = useState<{
@@ -438,8 +465,8 @@ const DWSSBIMDashboard = () => {
       updateDate: '2025-02-20', 
       status: 'Submitted', 
       bindingStatus: 'history', 
-      linkedToCurrent: false, 
-      objects: ['F-A-001-OLD', 'F-A-002-OLD'], 
+      linkedToCurrent: true, // 修改为true以便测试浮窗功能
+      objects: ['F-A-002'], // 关联到当前构件
       createdBy: 'Mike Johnson', 
       changes: ['构件位置调整', '材料参数更新'],
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
@@ -479,8 +506,8 @@ const DWSSBIMDashboard = () => {
       type: 'Working Drawings', 
       bindingStatus: 'history', 
       uploadedBy: 'Sarah Wilson', 
-      linkedToCurrent: false, 
-      objects: ['F-A-001-OLD', 'F-A-002-OLD'], 
+      linkedToCurrent: true, // 修改为true以便测试浮窗功能
+      objects: ['F-A-001'], // 关联到当前构件
       changes: ['构件位置调整', '几何形状优化'],
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' }
     },
@@ -596,8 +623,11 @@ const DWSSBIMDashboard = () => {
     return finalSet;
   };
 
-  // 检查是否有HyD Code筛选激活
+  // 检查是否有HyD Code筛选激活 - 更新以支持历史视图
   const hasHydCodeFilter = () => {
+    // 历史视图模式下，HYDCODE不可用
+    if (floatingPanel.isHistoricalView) return false;
+    
     return Object.keys(hydCodeFilter).some(key => {
       if (key === 'project') return false; // project不算在激活筛选中
       return hydCodeFilter[key as keyof HydCode] !== '';
@@ -719,9 +749,22 @@ const DWSSBIMDashboard = () => {
     }
   };
 
-  // 过滤RISC表单 - 修复的HyD Code + 高亮构件优先级逻辑
+  // 过滤RISC表单 - 修复的HyD Code + 高亮构件优先级逻辑 + 历史视图支持
   const getFilteredRiscForms = () => {
-    let filtered = riscForms.filter(form => {
+    let allRiscForms = riscForms;
+    
+    // 历史视图模式：只显示与当前浮窗构件相关的条目
+    if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
+      allRiscForms = riscForms.filter(form => 
+        form.objects.includes(floatingPanel.componentInfo!.componentId) ||
+        (form.bindingStatus === 'history' && form.linkedToCurrent)
+      );
+    } else {
+      // 当前视图模式：显示所有RISC和文件表单
+      // 保持现有逻辑不变
+    }
+
+    let filtered = allRiscForms.filter(form => {
       // 基础筛选条件（除了对象关联）
       if (riscFilters.status && form.status !== riscFilters.status) return false;
       if (riscFilters.startDate && new Date(form.updateDate) < new Date(riscFilters.startDate)) return false;
@@ -764,9 +807,22 @@ const DWSSBIMDashboard = () => {
     return filtered;
   };
 
-  // 过滤文件 - 修复的HyD Code + 高亮构件优先级逻辑
+  // 过滤文件 - 修复的HyD Code + 高亮构件优先级逻辑 + 历史视图支持
   const getFilteredFiles = () => {
-    let filtered = files.filter(file => {
+    let allFiles = files;
+    
+    // 历史视图模式：只显示与当前浮窗构件相关的条目
+    if (floatingPanel.isHistoricalView && floatingPanel.componentInfo) {
+      allFiles = files.filter(file => 
+        file.objects.includes(floatingPanel.componentInfo!.componentId) ||
+        (file.bindingStatus === 'history' && file.linkedToCurrent)
+      );
+    } else {
+      // 当前视图模式：显示所有RISC和文件表单
+      // 保持现有逻辑不变
+    }
+
+    let filtered = allFiles.filter(file => {
       // 基础筛选条件（除了对象关联）
       if (fileFilters.type && file.type !== fileFilters.type) return false;
       if (fileFilters.startDate && new Date(file.uploadDate) < new Date(fileFilters.startDate)) return false;
@@ -973,10 +1029,45 @@ const DWSSBIMDashboard = () => {
     setHoveredObjects([]);
   };
 
-  // 处理列表条目点击 - 重新设计的HyD Code交互逻辑
+  // 处理列表条目点击 - 重新设计的HyD Code交互逻辑 + 历史构件支持
   const handleListItemClick = (item: RiscForm | FileItem, type: string): void => {
     // 清除模型树高亮状态
     clearTreeHighlight();
+    
+    // 检查是否是绑定历史构件的条目
+    if ('bindingStatus' in item && item.bindingStatus === 'history' && item.linkedToCurrent) {
+      // 点击绑定历史构件的条目：显示浮窗并高光对应构件
+      const componentId = item.objects[0]; // 假设第一个关联的构件ID
+      const currentComponent = components.find(c => c.id === componentId);
+      
+      if (currentComponent) {
+        // 高光对应的构件
+        setManualHighlightSet([componentId]);
+        setSelectedRISC(type === 'risc' ? item.id : null);
+        setSelectedFile(type === 'file' ? item.id : null);
+        
+        // 创建历史构件信息
+        const historicalInfo: HistoricalComponentInfo = {
+          componentId: componentId,
+          currentVersionId: currentComponent.version,
+          historicalVersionId: 'v1.8', // 假设历史版本
+          fileInfo: item,
+          fileType: type as 'file' | 'risc',
+          changes: item.changes || ['修改了材料属性', '更新了几何信息']
+        };
+        
+        // 显示浮窗
+        setFloatingPanel({
+          visible: true,
+          componentInfo: historicalInfo,
+          isHistoricalView: false // 初始显示当前视图
+        });
+        
+        // 保存原始模型版本
+        setOriginalModelVersion(selectedModelVersion);
+      }
+      return;
+    }
     
     // 绑定模式下，点击条目的效果和绑定模式之外一样
     // 不再在这里处理文件切换，而是通过专门的按钮处理
@@ -1516,6 +1607,51 @@ const DWSSBIMDashboard = () => {
         alert('当前绑定购物车中包含历史版本构件，请注意在当前视图下可能无法正确显示这些构件。');
       }
     }
+  };
+
+  // 历史视图切换函数
+  const handleToggleHistoricalView = () => {
+    if (!floatingPanel.componentInfo) return;
+    
+    const newIsHistoricalView = !floatingPanel.isHistoricalView;
+    
+    setFloatingPanel(prev => ({
+      ...prev,
+      isHistoricalView: newIsHistoricalView
+    }));
+    
+    if (newIsHistoricalView) {
+      // 切换到历史视图模式
+      setSelectedModelVersion(floatingPanel.componentInfo.historicalVersionId);
+      setViewMode('historical');
+    } else {
+      // 切换回当前视图模式
+      setSelectedModelVersion(originalModelVersion);
+      setViewMode(originalModelVersion === 'current' ? 'current' : 'historical');
+    }
+    
+    // 保持构件高光状态
+    setManualHighlightSet([floatingPanel.componentInfo.componentId]);
+  };
+
+  // 关闭历史视图浮窗
+  const handleCloseFloatingPanel = () => {
+    setFloatingPanel({
+      visible: false,
+      componentInfo: null,
+      isHistoricalView: false
+    });
+    
+    // 如果当前在历史视图模式，恢复到原始模型版本
+    if (floatingPanel.isHistoricalView) {
+      setSelectedModelVersion(originalModelVersion);
+      setViewMode(originalModelVersion === 'current' ? 'current' : 'historical');
+    }
+    
+    // 清除高光和选择状态
+    setManualHighlightSet([]);
+    setSelectedRISC(null);
+    setSelectedFile(null);
   };
 
   // 发送邀请
@@ -4908,17 +5044,23 @@ const DWSSBIMDashboard = () => {
               <div className="flex-1 p-4 space-y-6 overflow-y-auto">
                 {/* HyD Code 高级筛选 - 仅授权用户和管理员可见 */}
                 {!isViewOnlyUser() && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
+                  <div className={`border-b pb-4 mb-4 flex-shrink-0 ${floatingPanel.isHistoricalView ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm font-medium flex items-center">
                         <Filter className="w-4 h-4 mr-2" />
                         HyD Code 高级筛选
+                        {floatingPanel.isHistoricalView && (
+                          <span className="ml-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
+                            历史视图不可用
+                          </span>
+                        )}
                       </h3>
                       {hasHydCodeFilter() && (
                         <button
                           onClick={clearAllHydCodeFilters}
                           className="text-xs text-red-600 hover:text-red-800"
                           title="清除所有HyD Code筛选"
+                          disabled={floatingPanel.isHistoricalView}
                         >
                           清除
                         </button>
@@ -4932,21 +5074,24 @@ const DWSSBIMDashboard = () => {
                             value={hydCodeFilter[level]}
                             onChange={(e) => handleHydCodeChange(level as keyof HydCode, e.target.value)}
                             className={`w-full border rounded px-2 py-1 text-sm ${
-                              level === 'project' ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+                              level === 'project' || floatingPanel.isHistoricalView ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
                             }`}
-                            disabled={level === 'project'}
-                            title={level === 'project' ? 'Project字段不可选择' : `选择${level}`}
+                            disabled={level === 'project' || floatingPanel.isHistoricalView}
+                            title={
+                              floatingPanel.isHistoricalView ? '历史视图模式下不可使用HyD Code筛选' :
+                              level === 'project' ? 'Project字段不可选择' : `选择${level}`
+                            }
                           >
                             <option value="">请选择...</option>
                             {hydCodeOptions[level].map(option => (
                               <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+                            ))}
+                          </select>
                         </div>
                       ))}
                     </div>
                     <div className="mt-2 text-xs text-blue-600">
-                      匹配构件: {getHydCodeFilteredComponents().length}
+                      匹配构件: {floatingPanel.isHistoricalView ? '-' : getHydCodeFilteredComponents().length}
                     </div>
                   </div>
                 )}
@@ -5716,6 +5861,83 @@ const DWSSBIMDashboard = () => {
       
       {/* 右键菜单 */}
       <ContextMenu />
+      
+      {/* 历史视图浮窗 */}
+      {floatingPanel.visible && floatingPanel.componentInfo && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-2xl border border-gray-300 z-50 w-96">
+          {/* 标题栏 */}
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <History className="w-5 h-5" />
+              <span className="font-semibold text-sm">
+                {floatingPanel.isHistoricalView ? '历史视图模式' : '当前视图模式'}
+              </span>
+            </div>
+            <button 
+              onClick={handleCloseFloatingPanel}
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded p-1"
+              title="关闭浮窗"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {/* 内容区域 */}
+          <div className="p-4 space-y-4">
+            {/* 构件信息 */}
+            <div className="border-b pb-3">
+              <h4 className="font-semibold text-gray-800 mb-2">构件信息</h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>构件ID: <span className="font-mono">{floatingPanel.componentInfo.componentId}</span></div>
+                <div>当前版本: <span className="font-mono">{floatingPanel.componentInfo.currentVersionId}</span></div>
+                <div>历史版本: <span className="font-mono">{floatingPanel.componentInfo.historicalVersionId}</span></div>
+              </div>
+            </div>
+            
+            {/* 文件信息 */}
+            <div className="border-b pb-3">
+              <h4 className="font-semibold text-gray-800 mb-2">
+                {floatingPanel.componentInfo.fileType === 'file' ? '关联文件' : '关联RISC表单'}
+              </h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                <div>名称: <span className="font-medium">{floatingPanel.componentInfo.fileInfo.name || (floatingPanel.componentInfo.fileInfo as RiscForm).requestNo}</span></div>
+                <div>更新时间: <span>{floatingPanel.componentInfo.fileInfo.updateDate || (floatingPanel.componentInfo.fileInfo as FileItem).uploadDate}</span></div>
+              </div>
+            </div>
+            
+            {/* 变更说明 */}
+            <div className="border-b pb-3">
+              <h4 className="font-semibold text-gray-800 mb-2">变更说明</h4>
+              <div className="text-sm text-gray-600 space-y-1">
+                {floatingPanel.componentInfo.changes.map((change, index) => (
+                  <div key={index} className="flex items-start space-x-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></span>
+                    <span>{change}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* 操作按钮 */}
+            <div className="flex justify-between items-center pt-2">
+              <button 
+                onClick={handleToggleHistoricalView}
+                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>
+                  {floatingPanel.isHistoricalView ? '切换到当前视图' : '切换到历史视图'}
+                </span>
+              </button>
+              
+              <div className="text-xs text-gray-500">
+                {floatingPanel.isHistoricalView ? '正在查看历史模型' : '正在查看当前模型'}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Place UserGuideModal at root */}
       {showUserGuide && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
