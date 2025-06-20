@@ -453,19 +453,34 @@ const DWSSBIMDashboard = () => {
         status: 'history'
       }
     },
-    // 新增删除条目示例 - RISC表单
-    { 
-      id: 'DEL0001-RISC-TMP-B-5-00001', 
-      requestNo: 'DEL0001-RISC-TMP-B-5-00001', 
-      updateDate: '2024-11-15', 
-      status: 'Approved', 
-      bindingStatus: 'history', 
-      linkedToCurrent: false, 
-      objects: ['TEMP-COL-B-999'], // 临时柱构件，已在最新版本中删除
-      createdBy: 'Sarah Wilson',
-      changes: ['临时柱构件已删除', '设计优化导致构件移除', 'RISC表单归档保存'],
-      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FRAME', space: 'WC_C2', grid: 'ST_GE', cat: 'CONCRETE' },
-      boundModelVersionId: 'v1.8'
+    // 新增：只存在于历史版本的构件（用于删除条目示例）
+    {
+      id: 'TEMP-WALL-D-001',
+      name: 'Temporary Wall D1',
+      version: 'v1.8',
+      modelVersionId: 'v1.8',
+      objectGroup: 'OBJ-GROUP-TEMP-01',
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-D', structure: 'TEMP', space: 'NA', grid: 'NA', cat: 'CONCRETE' },
+      properties: {
+        position: 'Temporary access wall D1',
+        material: 'C25混凝土',
+        volume: '8m³',
+        status: 'deleted'
+      }
+    },
+    {
+      id: 'TEMP-SUPPORT-E-002',
+      name: 'Temporary Support E2',
+      version: 'v1.8',
+      modelVersionId: 'v1.8',
+      objectGroup: 'OBJ-GROUP-TEMP-02',
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-E', structure: 'TEMP', space: 'NA', grid: 'NA', cat: 'STEEL' },
+      properties: {
+        position: 'Temporary support structure E2',
+        material: 'S275钢材',
+        length: '12m',
+        status: 'deleted'
+      }
     }
   ]);
 
@@ -549,6 +564,35 @@ const DWSSBIMDashboard = () => {
       changes: ['构件位置调整', '几何形状优化'],
       hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-A', structure: 'FOUNDATION', space: 'WC_B8', grid: 'ST_FD', cat: 'CONCRETE' },
       boundModelVersionId: 'v1.8'
+    },
+    // 新增：删除条目示例 - 文件
+    {
+      id: 99,
+      name: 'Obsolete Temporary Support Plan.pdf',
+      uploadDate: '2024-11-22',
+      updateDate: '2024-11-22',
+      type: 'Working Drawings',
+      bindingStatus: 'history',
+      uploadedBy: 'Admin',
+      linkedToCurrent: false,
+      objects: ['TEMP-SUPPORT-E-002'],
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-E', structure: 'TEMP', space: 'NA', grid: 'NA', cat: 'STEEL' },
+      boundModelVersionId: 'v1.8',
+      changes: ['临时支撑结构已拆除', '施工图纸已作废归档']
+    },
+    // 新增：删除条目示例 - RISC
+    {
+      id: 'DEL-RISC-001',
+      requestNo: 'DEL-RISC-001-TEMP-WALL-D-001',
+      updateDate: '2024-11-20',
+      status: 'Approved',
+      bindingStatus: 'history',
+      linkedToCurrent: false,
+      objects: ['TEMP-WALL-D-001'],
+      createdBy: 'Admin',
+      hydCode: { project: 'HY202404', contractor: 'CSG', location: 'SITE-D', structure: 'TEMP', space: 'NA', grid: 'NA', cat: 'CONCRETE' },
+      boundModelVersionId: 'v1.8',
+      changes: ['临时墙体已按计划拆除', '相关RISC表单已归档']
     },
     { 
       id: 5, 
@@ -5720,10 +5764,10 @@ const DWSSBIMDashboard = () => {
                     </select>
                     
                     {/* 我上传的文件筛选 - 仅管理员和授权用户可见 */}
-                    {!isViewOnlyUser() && (
+              {!isViewOnlyUser() && (
                       <div className="flex items-center">
-                        <input
-                          type="checkbox"
+                  <input
+                    type="checkbox"
                           id="showMyFiles"
                           checked={fileFilters.showMyFiles}
                           onChange={(e) => handleFileFilterChange('showMyFiles', e.target.checked)}
@@ -5731,9 +5775,9 @@ const DWSSBIMDashboard = () => {
                         />
                         <label htmlFor="showMyFiles" className="text-xs text-gray-700 cursor-pointer">
                           我上传的文件
-                        </label>
+                </label>
                       </div>
-                    )}
+              )}
                     
                     {/* 当前模型绑定筛选 */}
                     <div className="flex items-center">
