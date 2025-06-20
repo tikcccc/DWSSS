@@ -963,13 +963,7 @@ const DWSSBIMDashboard = () => {
     if (!hasHydCodeFilter()) return [];
     
     return components
-      .filter(obj => {
-        if (selectedModelVersion === 'current') {
-          return obj.version === 'current';
-        } else {
-          return obj.version === selectedModelVersion || obj.version === 'v1.8';
-        }
-      })
+      .filter(obj => obj.modelVersionId === selectedModelVersion)
       .filter(obj => matchesHydCodeFilter(obj.hydCode))
       .map(obj => obj.id);
   };
@@ -1030,13 +1024,7 @@ const DWSSBIMDashboard = () => {
     // 只有当确实有筛选条件时才计算筛选高光集
     if (hasAnyFilter) {
       newFilterHighlightSet = components
-        .filter(obj => {
-          if (selectedModelVersion === 'current') {
-            return obj.version === 'current';
-          } else {
-            return obj.version === selectedModelVersion || obj.version === 'v1.8';
-          }
-        })
+        .filter(obj => obj.modelVersionId === selectedModelVersion)
         .filter(obj => {
           return Object.keys(newHydCodeFilter).every(key => {
             if (key === 'project') return true; // project字段不参与筛选
@@ -1413,19 +1401,19 @@ const DWSSBIMDashboard = () => {
       const newCart = { ...prev };
       
       // 如果是首次添加对象，记录版本信息
-      const targetVersion = obj.version;
+      const targetModelVersion = obj.modelVersionId;
       
       // 版本一致性检查 - 特殊处理：文件可以与任何版本的构件绑定，但所有构件必须属于同一版本
       if (newCart.objects.length > 0) {
-        const existingVersion = newCart.objects[0].version;
-        if (obj.version !== existingVersion) {
+        const existingModelVersion = newCart.objects[0].modelVersionId;
+        if (obj.modelVersionId !== existingModelVersion) {
           // 构件版本不一致的处理
-          const confirmMessage = `不能将不同版本的构件添加到同一个绑定中。\n\n当前绑定中的构件版本: ${existingVersion}\n尝试添加的构件版本: ${obj.version}\n\n一个文件可以绑定到任何版本的构件，但所有构件必须属于同一个版本。\n\n是否清除当前所有已选构件，并添加新构件？`;
+          const confirmMessage = `不能将不同版本的构件添加到同一个绑定中。\n\n当前绑定中的构件模型版本: ${existingModelVersion}\n尝试添加的构件模型版本: ${obj.modelVersionId}\n\n一个文件可以绑定到任何版本的构件，但所有构件必须属于同一个版本。\n\n是否清除当前所有已选构件，并添加新构件？`;
           
           if (confirm(confirmMessage)) {
             // 清空现有对象，添加新对象
             newCart.objects = [obj];
-            newCart.hasHistoricalObjects = obj.version !== 'current';
+            newCart.hasHistoricalObjects = obj.modelVersionId !== 'current';
             return newCart;
           } else {
             return prev; // 用户取消，不进行更改
@@ -1441,7 +1429,7 @@ const DWSSBIMDashboard = () => {
       }
       
       // 检查是否包含历史对象
-      newCart.hasHistoricalObjects = newCart.objects.some(o => o.version !== 'current');
+      newCart.hasHistoricalObjects = newCart.objects.some(o => o.modelVersionId !== 'current');
       
       return newCart;
     });
@@ -1464,7 +1452,7 @@ const DWSSBIMDashboard = () => {
     
     // 获取文件关联的构件
     const linkedObjects = components.filter(obj => file.objects.includes(obj.id));
-    const hasHistoricalObjects = linkedObjects.some(obj => obj.version !== 'current');
+    const hasHistoricalObjects = linkedObjects.some(obj => obj.modelVersionId !== 'current');
     
     // 设置绑定购物车 - 切换文件，构件预加载
     setBindingCart({
@@ -1535,8 +1523,8 @@ const DWSSBIMDashboard = () => {
     
     // 检查对象版本一致性
     if (totalObjects > 1) {
-      const firstVersion = bindingCart.objects[0].version;
-      const allSameVersion = bindingCart.objects.every(obj => obj.version === firstVersion);
+      const firstModelVersion = bindingCart.objects[0].modelVersionId;
+      const allSameVersion = bindingCart.objects.every(obj => obj.modelVersionId === firstModelVersion);
       if (!allSameVersion) {
         alert('绑定的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。请移除不一致的构件后重试。');
         return;
@@ -1566,7 +1554,7 @@ const DWSSBIMDashboard = () => {
       
       // 检查是否是历史版本文件绑定到当前版本对象
       const isHistoricalFileBindingToCurrent = bindingCart.files.some(f => f.bindingStatus === 'history') && 
-                                               bindingCart.objects.every(obj => obj.version === 'current');
+                                               bindingCart.objects.every(obj => obj.modelVersionId === 'current');
       
       // 更新文件绑定和更新日期
       bindingCart.files.forEach(file => {
@@ -2076,7 +2064,7 @@ const DWSSBIMDashboard = () => {
                   <h5 className="text-sm font-medium mb-2 text-blue-700">当前版本 ({currentVersion})</h5>
                   <div className="space-y-2">
                     {components
-                      .filter(obj => obj.version === 'current' && item.objects.some(id => id.replace('-OLD', '') === obj.id))
+                      .filter(obj => obj.modelVersionId === 'current' && item.objects.some(id => id.replace('-OLD', '') === obj.id))
                       .map(obj => (
                         <div key={obj.id} className="bg-blue-50 p-2 rounded text-sm">
                           <div className="font-medium">{obj.name}</div>
@@ -2832,12 +2820,12 @@ const DWSSBIMDashboard = () => {
                     >
                       <div className="text-sm font-medium text-gray-900 flex items-center">
                         {obj.name}
-                        {obj.version !== 'current' && (
+                        {obj.modelVersionId !== 'current' && (
                           <History className="w-3 h-3 text-orange-600 flex-shrink-0 ml-1" />
                         )}
                       </div>
                       <div className="text-xs opacity-75 truncate">{obj.objectGroup}</div>
-                      <div className="text-xs opacity-60">v: {obj.version}</div>
+                      <div className="text-xs opacity-60">v: {obj.modelVersionId}</div>
                     </div>
                     {/* 使用新的删除按钮组件 */}
                     <DeleteComponentButton component={obj} />
@@ -2849,7 +2837,7 @@ const DWSSBIMDashboard = () => {
         )}
         
         {/* 版本警告 */}
-        {bindingCart.objects.length > 0 && !bindingCart.objects.every(obj => obj.version === bindingCart.objects[0].version) && (
+        {bindingCart.objects.length > 0 && !bindingCart.objects.every(obj => obj.modelVersionId === bindingCart.objects[0].modelVersionId) && (
           <div className="bg-red-50 border border-red-200 p-2 rounded">
             <div className="text-xs text-red-800 font-medium">⚠️ 版本冲突</div>
             <div className="text-xs text-red-600">同一绑定中的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。请移除不一致版本的构件。</div>
@@ -2929,7 +2917,7 @@ const DWSSBIMDashboard = () => {
     }
     
     // 检查新构件的版本一致性
-    const versions = [...new Set(newComponents.map(comp => comp.version))];
+    const modelVersions = [...new Set(newComponents.map(comp => comp.modelVersionId))];
     if (versions.length > 1) {
       const confirmMessage = `检测到高亮构件包含多个版本：${versions.join(', ')}\n\n绑定的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。\n\n是否只添加版本为"${versions[0]}"的构件？`;
       if (confirm(confirmMessage)) {
@@ -2953,7 +2941,7 @@ const DWSSBIMDashboard = () => {
           setBindingCart(prev => ({
             ...prev,
             objects: newComponents,
-            hasHistoricalObjects: newComponents.some(comp => comp.version !== 'current')
+            hasHistoricalObjects: newComponents.some(comp => comp.modelVersionId !== 'current')
           }));
           // 添加成功后清除高亮
           clearAllHighlightsAfterAdd();
@@ -3019,7 +3007,7 @@ const DWSSBIMDashboard = () => {
       const newComponents = componentsToAdd.filter(comp => !existingIds.has(comp.id));
       
       const updatedObjects = [...prev.objects, ...newComponents];
-      const hasHistoricalObjects = updatedObjects.some(obj => obj.version !== 'current');
+      const hasHistoricalObjects = updatedObjects.some(obj => obj.modelVersionId !== 'current');
       
       return {
         ...prev,
