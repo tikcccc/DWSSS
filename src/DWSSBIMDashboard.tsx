@@ -5315,7 +5315,7 @@ const DWSSBIMDashboard = () => {
                   </div>
                   
                   {/* RISC List */}
-                  <div className="flex-1 min-h-0 overflow-hidden">
+                  <div className="flex-1 min-h-0 overflow-visible">
                     <div className="border rounded-md overflow-hidden h-full flex flex-col">
                       <table className="w-full text-xs">
                         <thead className="bg-gray-50 border-b flex-shrink-0">
