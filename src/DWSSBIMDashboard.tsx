@@ -3020,10 +3020,10 @@ const DWSSBIMDashboard = () => {
     
     // 检查新构件的版本一致性
     const modelVersions = [...new Set(newComponents.map(comp => comp.modelVersionId))];
-    if (versions.length > 1) {
-      const confirmMessage = `检测到高亮构件包含多个版本：${versions.join(', ')}\n\n绑定的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。\n\n是否只添加版本为"${versions[0]}"的构件？`;
+    if (modelVersions.length > 1) {
+      const confirmMessage = `Multiple versions detected among highlighted components: ${modelVersions.join(', ')}\n\nAll components in the same binding must belong to the same version, but a file can be bound to components of any version.\n\nDo you want to add only the components with version "${modelVersions[0]}"?`;
       if (confirm(confirmMessage)) {
-        const sameVersionComponents = newComponents.filter(comp => comp.version === versions[0]);
+        const sameVersionComponents = newComponents.filter(comp => comp.version === modelVersions[0]);
         addMultipleComponentsToCart(sameVersionComponents, alreadyInCartCount);
         // 添加成功后清除高亮
         clearAllHighlightsAfterAdd();
@@ -3037,8 +3037,8 @@ const DWSSBIMDashboard = () => {
     // 检查与购物车中现有构件的版本一致性
     if (bindingCart.objects.length > 0) {
       const cartVersion = bindingCart.objects[0].version;
-      if (versions[0] !== cartVersion) {
-        const confirmMessage = `There are components with version "${cartVersion}" in the cart.\nThe highlighted components are version "${versions[0]}".\n\nAll components in the same binding must belong to the same version, but files can be bound to components of any version.\n\nDo you want to clear the cart and add the highlighted components?`;
+      if (modelVersions[0] !== cartVersion) {
+        const confirmMessage = `There are components with version "${cartVersion}" in the cart.\nThe highlighted components are version "${modelVersions[0]}".\n\nAll components in the same binding must belong to the same version, but files can be bound to components of any version.\n\nDo you want to clear the cart and add the highlighted components?`;
         if (confirm(confirmMessage)) {
           setBindingCart(prev => ({
             ...prev,
@@ -3358,13 +3358,13 @@ const DWSSBIMDashboard = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium flex items-center">
                 <Layers className="w-5 h-5 mr-2" />
-                模型零件树
+                Model Component Tree
               </h3>
               <div className="flex space-x-2">
                 <button 
                   onClick={toggleComponentTree}
                   className="p-1 hover:bg-gray-100 rounded"
-                  title="关闭模型树"
+                  title="Close model tree"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -3382,7 +3382,7 @@ const DWSSBIMDashboard = () => {
                     clearTreeHighlight(); // 搜索时清除模型树高亮
                     showAllTreeObjectsWhite(); // 搜索时重置为显示所有白色
                   }}
-                  placeholder="搜索构件名称、材料..."
+                  placeholder="Search components by name, material..."
                   className="w-full border rounded-md pl-9 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -3396,7 +3396,7 @@ const DWSSBIMDashboard = () => {
                       showAllTreeObjectsWhite(); // 清除搜索时重置为显示所有白色
                     }}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    title="清除搜索"
+                    title="Clear search"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -3433,13 +3433,13 @@ const DWSSBIMDashboard = () => {
                             <ChevronRight className="w-4 h-4 mr-2" />
                           }
                           <span className="font-medium text-sm">{groupName}</span>
-                          <span className="ml-2 text-xs text-gray-500">({components.length}个构件)</span>
+                          <span className="ml-2 text-xs text-gray-500">({components.length} components)</span>
                         </div>
                         <div className="flex items-center">
                           {components.some(c => c.version !== 'current') && (
                             <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full flex items-center mr-2">
                               <History className="w-3 h-3 mr-1" />
-                              含历史版本
+                              Contains Historical Version
                             </span>
                           )}
                         </div>
@@ -3496,8 +3496,8 @@ const DWSSBIMDashboard = () => {
             ) : (
               <div className="text-center py-8 text-gray-500">
                 {componentFilter ? 
-                  `没有找到包含 "${componentFilter}" 的构件` : 
-                  '没有找到符合条件的构件'
+                  `No components found containing "${componentFilter}"` : 
+                  'No components found matching the criteria'
                 }
               </div>
             )}
