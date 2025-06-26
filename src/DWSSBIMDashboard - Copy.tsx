@@ -1213,7 +1213,7 @@ const DWSSBIMDashboard = () => {
       if (currentViewComponents.length > 0) {
         setManualHighlightSet(currentViewComponents.map(c => c.id));
         
-        // If the item's binding version ID is not the latest version, show floating panel
+        // 如果条目的绑定版本ID不是最新版本，显示浮窗
         if (boundModelVersionId !== currentModelVersionId) {
           const firstComponentId = componentIds[0];
           const historicalInfo: HistoricalComponentInfo = {
@@ -1222,10 +1222,10 @@ const DWSSBIMDashboard = () => {
             historicalVersionId: boundModelVersionId,
             fileInfo: item,
             fileType: type as 'file' | 'risc',
-            changes: item.changes || ['Version difference information', 'Component properties updated']
+            changes: item.changes || ['版本差异信息', '构件属性更新']
           };
           
-          // Show floating panel
+          // 显示浮窗
           setFloatingPanel({
             visible: true,
             componentInfo: historicalInfo,
@@ -1237,17 +1237,17 @@ const DWSSBIMDashboard = () => {
       }
     }
     
-    // Check if in HyD Code filtering mode
+    // 检查是否在HyD Code筛选模式下
     if (hasHydCodeFilter()) {
       const finalHighlightSet = getFinalHighlightSet();
       
-      // Case 1: No components are highlighted in the view, or no item is selected
+      // 情况1：视图中无任何构件持续高亮，或者条目没被单击选中
       if (finalHighlightSet.length === 0 || (selectedRISC === null && selectedFile === null)) {
-        const confirmMessage = `HyD Code filtering is currently active.\n\nDo you want to exit the current HyD Code filtering and select components based only on this item?\n\nClick "OK" to clear the current filter and show only content related to this item.\nClick "Cancel" to maintain the current filter status.`;
+        const confirmMessage = `检测到您正在使用HyD Code筛选。\n\n是否要退出当前的HyD Code筛选，并仅根据此条目来选择构件？\n\n点击"确定"将清除当前筛选并仅显示与此条目相关的内容。\n点击"取消"保持当前筛选状态。`;
         
         if (confirm(confirmMessage)) {
-          // User chooses to exit filtering mode
-          // 1. Clear all HyD Code filter states
+          // 用户选择退出筛选模式
+          // 1. 清空所有HyD Code筛选状态
           setHydCodeFilter({
             project: 'HY202404',
             contractor: '',
@@ -1259,10 +1259,10 @@ const DWSSBIMDashboard = () => {
           });
           setFilterHighlightSet([]);
           
-          // 2. Establish new manual highlight set
+          // 2. 建立新的手动高亮集
           setManualHighlightSet(item.objects);
           
-          // 3. Update selection state
+          // 3. 更新选择状态
           if (type === 'risc') {
             setSelectedRISC(item.id);
             setSelectedFile(null);
@@ -1274,12 +1274,12 @@ const DWSSBIMDashboard = () => {
         return;
       }
       
-      // Case 2: There are continuously highlighted components in the view
-      // Prompt the user whether to exit HyD Code filtering
-      const confirmMessage = `HyD Code filtering is currently active.\n\nDo you want to exit the current HyD Code filtering and select components based only on this item?\n\nClick "OK" to clear the current filter and show only content related to this item.\nClick "Cancel" to maintain the current filter status.`;
+      // 情况2：视图中有持续高亮的构件
+      // 提示用户是否退出HyD Code筛选
+      const confirmMessage = `检测到您正在使用HyD Code筛选。\n\n是否要退出当前的HyD Code筛选，并仅根据此条目来选择构件？\n\n点击"确定"将清除当前筛选并仅显示与此条目相关的内容。\n点击"取消"保持当前筛选状态。`;
       
       if (confirm(confirmMessage)) {
-        // User chooses to exit filtering mode
+        // 用户选择退出筛选模式
         setHydCodeFilter({
           project: 'HY202404',
           contractor: '',
@@ -1303,19 +1303,19 @@ const DWSSBIMDashboard = () => {
       return;
     }
 
-    // Normal click logic in non-HyD Code filtering mode
+    // 非HyD Code筛选模式下的正常点击逻辑
     if (type === 'risc') {
       const riscItem = item as RiscForm;
       if (selectedRISC === riscItem.id) {
-        // Deselect
+        // 取消选中
         setSelectedRISC(null);
         setSelectedFile(null);
         setManualHighlightSet([]);
       } else {
-        // Select new RISC
+        // 选中新的RISC
         setSelectedRISC(riscItem.id);
         setSelectedFile(null);
-        // Highlight components with the same ID in the current view
+        // 高光当前视图中相同构件ID的构件
         const currentViewComponents = components.filter(c => 
           riscItem.objects.includes(c.id) && c.modelVersionId === selectedModelVersion
         );
@@ -1324,15 +1324,15 @@ const DWSSBIMDashboard = () => {
     } else if (type === 'file') {
       const fileItem = item as FileItem;
       if (selectedFile === fileItem.id) {
-        // Deselect
+        // 取消选中
         setSelectedFile(null);
         setSelectedRISC(null);
         setManualHighlightSet([]);
       } else {
-        // Select new file
+        // 选中新的文件
         setSelectedFile(fileItem.id);
         setSelectedRISC(null);
-        // Highlight components with the same ID in the current view
+        // 高光当前视图中相同构件ID的构件
         const currentViewComponents = components.filter(c => 
           fileItem.objects.includes(c.id) && c.modelVersionId === selectedModelVersion
         );
@@ -1341,17 +1341,17 @@ const DWSSBIMDashboard = () => {
     }
   };
 
-  // Handle BIM view component click - Same logic for binding mode and normal mode
+  // 处理BIM视图构件点击 - 绑定模式和普通模式逻辑一致
   const handleComponentClick = (component: Component, event?: React.MouseEvent): void => {
-    // Clear model tree highlight state
+    // 清除模型树高亮状态
     clearTreeHighlight();
     
-    // If right-click, show context menu
+    // 如果是右键点击，显示上下文菜单
     if (event && event.type === 'contextmenu') {
       event.preventDefault();
       
-      // Show context menu regardless of whether the component is in the highlight set
-      // This way the menu can be displayed even after left-click selection followed by right-click
+      // 无论构件是否在高亮集中，都显示上下文菜单
+      // 这样即使是左键选中后再右键点击也能显示菜单
       setContextMenu({
         visible: true,
         x: event.clientX,
@@ -1362,7 +1362,7 @@ const DWSSBIMDashboard = () => {
       return;
     }
     
-    // Check if in HyD Code filtering mode
+    // 检查是否在HyD Code筛选模式下
     if (hasHydCodeFilter()) {
       const finalHighlightSet = getFinalHighlightSet();
       const isComponentInFinalSet = finalHighlightSet.includes(component.id);
@@ -1370,102 +1370,102 @@ const DWSSBIMDashboard = () => {
       const isComponentInFilterSet = filterHighlightSet.includes(component.id);
       
       if (isComponentInFinalSet) {
-        // Click on component already in final highlight set: cancel this component's highlight state
+        // 点击已经在最终高亮集中的构件：取消此构件的高亮状态
         
-        // If component is in manual highlight set, remove from manual highlight set
+        // 如果构件在手动高亮集中，从手动高亮集中移除
         if (isComponentInManualSet) {
           const newManualHighlightSet = manualHighlightSet.filter(id => id !== component.id);
           setManualHighlightSet(newManualHighlightSet);
         }
         
-        // If component is only in filter highlight set (generated by HyD Code filtering), remove from filter highlight set
+        // 如果构件仅在筛选高亮集中（HyD Code筛选产生的），从筛选高亮集中移除
         else if (isComponentInFilterSet) {
           const newFilterHighlightSet = filterHighlightSet.filter(id => id !== component.id);
           setFilterHighlightSet(newFilterHighlightSet);
         }
         
-        // Clear selection state, as there is no longer a single item corresponding to it
+        // 清除选择状态，因为不再有单一的条目与之对应
         setSelectedRISC(null);
         setSelectedFile(null);
       } else {
-        // Click on non-highlighted component: add to manual highlight set
+        // 点击非高亮的构件：添加到手动高亮集
         setManualHighlightSet(prev => [...prev, component.id]);
         
-        // Clear selection state, as it is now a mixed selection mode
+        // 清除选择状态，因为现在是混合选择模式
         setSelectedRISC(null);
         setSelectedFile(null);
       }
       return;
     }
 
-    // Normal click logic in non-HyD Code filtering mode
+    // 非HyD Code筛选模式下的正常点击逻辑
     const isInManualSet = manualHighlightSet.includes(component.id);
     
     if (isInManualSet) {
-      // Remove from manual highlight set
+      // 从手动高亮集中移除
       setManualHighlightSet(prev => prev.filter(id => id !== component.id));
       
-      // If manual highlight set becomes empty, clear selection state
-      if (manualHighlightSet.length === 1) { // Will become 0 after removal
+      // 如果手动高亮集变空，清除选择状态
+      if (manualHighlightSet.length === 1) { // 移除后会变成0
         setSelectedRISC(null);
         setSelectedFile(null);
       }
     } else {
-      // Add to manual highlight set
+      // 添加到手动高亮集
       setManualHighlightSet(prev => [...prev, component.id]);
       
-      // Clear previous RISC and file selections, as it is now manual multi-select mode
+      // 清除之前的RISC和文件选择，因为现在是手动多选模式
       setSelectedRISC(null);
       setSelectedFile(null);
     }
 
-    // Additional processing in binding mode: automatically handle cart logic after component highlight changes
+    // 绑定模式下的额外处理：在构件高亮变化后，自动处理购物车逻辑
     if (isBindingMode) {
-      // Special handling in binding mode can be added here, such as automatically adding to cart
-      // But highlight logic remains consistent with normal mode
+      // 这里可以添加绑定模式下的特殊处理，比如自动添加到购物车等
+      // 但高亮逻辑保持与普通模式一致
     }
   };
 
-  // Handle double click - quick compare function
+  // 处理双击 - 快速对比功能
   const handleDoubleClick = (item: RiscForm | FileItem, type: string): void => {
-    // Direct navigation to detail page, no longer handling quick compare (already handled by single click)
+    // 直接导航到详情页，不再处理快速对比（已由单击处理）
     handleNavigateToDetail(item, type);
   };
 
-  // Start new binding relationship (for files without binding) - cancel file locking design
+  // 开始新的绑定关系（针对无绑定的文件）- 取消文件锁定设计
   const addToBindingCart = (item: FileItem, type: string): void => {
-    // Binding mode is not allowed in historical view
+    // 历史视图下不允许进入绑定模式
     if (viewMode === 'historical') {
-      alert('Binding mode is not allowed in historical view. Please switch to the current version before starting binding.');
+      alert('历史视图下不允许进入绑定模式。请先切换到当前版本后再开始绑定。');
       return;
     }
     
-    // Check user permissions
+    // 检查用户权限
     if (!hasBindingPermission()) {
-      alert('You do not have permission to perform binding operations');
+      alert('您没有权限进行绑定操作');
       return;
     }
 
-    // If editing a file, check if user has permission to edit
+    // 如果是要编辑的文件，检查是否有权限编辑
     if (item.objects.length > 0) {
       if (item.uploadedBy !== currentUser && !isAdmin()) {
-        alert('You can only edit files you uploaded');
+        alert('您只能编辑自己上传的文件');
       return;
       }
     }
 
-    // Check if already in binding mode with different files
+    // 检查是否已在绑定模式中且有不同文件
     if (isBindingMode && bindingCart.files.length === 1 && bindingCart.files[0].id !== item.id) {
-      if (confirm('There are already other files in the current binding cart. Do you want to clear the cart and start a new binding?')) {
+      if (confirm('当前绑定购物车中已有其他文件。是否清空购物车并开始新的绑定？')) {
         exitBindingMode();
       } else {
         return;
       }
     }
 
-    // Enter binding mode
+    // 进入绑定模式
     setIsBindingMode(true);
-    // Only load components matching the current selected version into the cart
+    // 只加载与当前选择版本匹配的构件到购物车
     const matchingObjects = item.objects
       .map(objId => components.find(c => c.id === objId))
       .filter(obj => obj && obj.modelVersionId === selectedModelVersion) as Component[];
@@ -1477,82 +1477,82 @@ const DWSSBIMDashboard = () => {
     });
     setShowBindingCart(true);
     
-    // Highlight components related to binding file
+    // 高光绑定文件相关的构件
     setManualHighlightSet(item.objects);
   };
 
-  // Add object to cart
+  // 添加对象到购物车
   const addObjectToCart = (obj: Component): void => {
     setBindingCart(prev => {
       const newCart = { ...prev };
       
-      // If this is the first object added, record version information
+      // 如果是首次添加对象，记录版本信息
       const targetModelVersion = obj.modelVersionId;
       
-      // Version consistency check - Special handling: files can be bound to components of any version, but all components must belong to the same version
+      // 版本一致性检查 - 特殊处理：文件可以与任何版本的构件绑定，但所有构件必须属于同一版本
       if (newCart.objects.length > 0) {
         const existingModelVersion = newCart.objects[0].modelVersionId;
         if (obj.modelVersionId !== existingModelVersion) {
-          // Handle component version inconsistency
-          const confirmMessage = `Cannot add components of different versions to the same binding.\n\nCurrent binding component model version: ${existingModelVersion}\nAttempting to add component model version: ${obj.modelVersionId}\n\nA file can be bound to components of any version, but all components must belong to the same version.\n\nDo you want to clear all currently selected components and add the new component?`;
+          // 构件版本不一致的处理
+          const confirmMessage = `不能将不同版本的构件添加到同一个绑定中。\n\n当前绑定中的构件模型版本: ${existingModelVersion}\n尝试添加的构件模型版本: ${obj.modelVersionId}\n\n一个文件可以绑定到任何版本的构件，但所有构件必须属于同一个版本。\n\n是否清除当前所有已选构件，并添加新构件？`;
           
           if (confirm(confirmMessage)) {
-            // Clear existing objects, add new object
+            // 清空现有对象，添加新对象
             newCart.objects = [obj];
             newCart.hasHistoricalObjects = obj.modelVersionId !== 'current';
             return newCart;
           } else {
-            return prev; // User canceled, no changes made
+            return prev; // 用户取消，不进行更改
           }
         }
       }
       
-      // Update objects in cart
+      // 更新购物车中的对象
       if (!newCart.objects.find(o => o.id === obj.id)) {
         newCart.objects.push(obj);
       } else {
         newCart.objects = newCart.objects.filter(o => o.id !== obj.id);
       }
       
-      // Check if it contains historical objects
+      // 检查是否包含历史对象
       newCart.hasHistoricalObjects = newCart.objects.some(o => o.modelVersionId !== 'current');
       
       return newCart;
     });
   };
 
-  // Modify existing binding - cancel file locking design
+  // 修改现有绑定 - 取消文件锁定设计
   const editExistingBinding = (file: FileItem): void => {
     if (!hasBindingPermission()) {
-      alert('You do not have permission to modify binding relationships');
+      alert('您没有权限修改绑定关系');
       return;
     }
     
-    // Permission check: Authorized users can only modify files they uploaded
+    // 权限检查：授权用户只能修改自己上传的文件
     if (currentUser !== 'Administrator' && file.uploadedBy !== currentUser) {
-      alert('You can only modify binding relationships for files you uploaded');
+      alert('您只能修改自己上传的文件的绑定关系');
       return;
     }
     
-    // Cancel file locking logic - directly allow switching to new file
+    // 取消文件锁定逻辑 - 直接允许切换到新文件
     
-    // Get components associated with the file, but only load those matching the currently selected version
+    // 获取文件关联的构件，但只加载与当前选择版本匹配的构件
     const linkedObjects = components.filter(obj => 
       file.objects.includes(obj.id) && obj.modelVersionId === selectedModelVersion
     );
     const hasHistoricalObjects = linkedObjects.some(obj => obj.modelVersionId !== 'current');
     
-    // Set binding cart - switch file, preload components
+    // 设置绑定购物车 - 切换文件，构件预加载
     setBindingCart({
       files: [file],
       objects: linkedObjects,
       hasHistoricalObjects
     });
     
-    // Set associated components as manual highlight set
+    // 将关联的构件设置为手动高亮集
     setManualHighlightSet(file.objects);
     
-    // Clear filter highlight set to avoid confusion
+    // 清除筛选高亮集以避免混淆
     setFilterHighlightSet([]);
     setHydCodeFilter({
       project: 'HY202404',
@@ -1564,88 +1564,88 @@ const DWSSBIMDashboard = () => {
       cat: ''
     });
     
-    // Comment out automatic version switching logic - always maintain current version view in binding mode
-    // This ensures that the binding panel only displays current version components, avoiding mixed display of historical components
+    // 注释掉自动版本切换逻辑 - 绑定模式下始终保持在当前版本视图
+    // 这样可以确保绑定面板只显示当前版本的构件，避免混合显示历史构件
     // if (hasHistoricalObjects && file.bindingStatus === 'history') {
     //   setSelectedModelVersion('v1.8');
     //   setViewMode('historical');
     // }
     
-    // Activate binding mode
+    // 激活绑定模式
     setIsBindingMode(true);
     
-    // Success prompt
-    alert(`Entered binding edit mode\n\nFile: "${file.name.substring(0, 40)}..."\nCurrently associated with ${linkedObjects.length} components\n\nYou can highlight other components through filtering or manual selection, then use the "Add All Highlighted Components" button for batch addition.`);
+    // 成功提示
+    alert(`进入绑定编辑模式\n\n文件："${file.name.substring(0, 40)}..."\n当前关联 ${linkedObjects.length} 个构件\n\n您可以通过筛选或手动选择来高亮其他构件，然后使用"添加所有高亮构件"按钮进行批量添加。`);
   };
 
-  // Exit binding mode
+  // 退出绑定模式
   const exitBindingMode = () => {
     setIsBindingMode(false);
     setBindingCart({ files: [], objects: [], hasHistoricalObjects: false });
     
-    // Clear hover state
+    // 清除悬浮状态
     setHoveredObjects([]);
     setHoveredItem(null);
     setHoveredItemType(null);
     
-    // If previously in historical view, restore to current view
+    // 如果之前是在历史视图，恢复到当前视图
     if (viewMode === 'historical') {
       setSelectedModelVersion('current');
       setViewMode('current');
     }
   };
 
-  // Submit binding
+  // 提交绑定
   const submitBinding = (): void => {
     const totalFiles = bindingCart.files.length;
     const totalObjects = bindingCart.objects.length;
     
     if (totalFiles !== 1) {
-      alert('Please select one file for binding');
+      alert('请选择一个文件进行绑定');
       return;
     }
     
     if (totalObjects === 0) {
-      alert('Please select at least one component for binding');
+      alert('请至少选择一个构件进行绑定');
       return;
     }
     
-    // Check object version consistency
+    // 检查对象版本一致性
     if (totalObjects > 1) {
       const firstModelVersion = bindingCart.objects[0].modelVersionId;
       const allSameVersion = bindingCart.objects.every(obj => obj.modelVersionId === firstModelVersion);
       if (!allSameVersion) {
-        alert('All components being bound must belong to the same version, but a file can be bound to components of any version. Please remove inconsistent components and try again.');
+        alert('绑定的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。请移除不一致的构件后重试。');
         return;
       }
     }
     
-    let confirmMessage = 'You will perform the following binding operation:\n\n';
-    confirmMessage += `• File "${bindingCart.files[0].name.substring(0, 40)}..." will be associated with ${totalObjects} components\n`;
+    let confirmMessage = '您将执行以下绑定操作：\n\n';
+    confirmMessage += `• 文件 "${bindingCart.files[0].name.substring(0, 40)}..." 将关联到 ${totalObjects} 个构件\n`;
     
-    confirmMessage += '\nAssociated components:\n';
+    confirmMessage += '\n关联的构件：\n';
     bindingCart.objects.forEach(obj => {
-      confirmMessage += `  - ${obj.name} (${obj.version})${obj.version !== 'current' ? ' [Historical version]' : ''}\n`;
+      confirmMessage += `  - ${obj.name} (${obj.version})${obj.version !== 'current' ? ' [历史版本]' : ''}\n`;
     });
     
     if (bindingCart.hasHistoricalObjects) {
-      confirmMessage += '\n⚠️ Note: You are binding historical version components.\n';
-      confirmMessage += 'A file can be bound to components of any version, but all components must belong to the same version.\n';
-      confirmMessage += 'This binding operation will associate the file with the historical version, and the corresponding components will only be visible in the appropriate version view.\n';
+      confirmMessage += '\n⚠️ 提示：您正在绑定历史版本的构件。\n';
+      confirmMessage += '一个文件可以绑定到任何版本的构件，但所有构件必须属于同一版本。\n';
+      confirmMessage += '此绑定操作将使文件关联到历史版本，在相应版本视图下才能看到对应的构件。\n';
     }
     
-    confirmMessage += '\nThis operation will override the existing associations of this file.\n\nDo you confirm submission?';
+    confirmMessage += '\n此操作将覆盖这个文件原有的关联关系。\n\n是否确认提交？';
     
     if (confirm(confirmMessage)) {
       const objectIds = bindingCart.objects.map(obj => obj.id);
       const currentTime = new Date();
       const updateDate = currentTime.toISOString().split('T')[0];
       
-      // Check if it's a historical version file binding to current version objects
+      // 检查是否是历史版本文件绑定到当前版本对象
       const isHistoricalFileBindingToCurrent = bindingCart.files.some(f => f.bindingStatus === 'history') && 
                                                bindingCart.objects.every(obj => obj.modelVersionId === 'current');
       
-      // Update file binding and update date
+      // 更新文件绑定和更新日期
       bindingCart.files.forEach(file => {
         setFiles(prev => prev.map(f => 
           f.id === file.id 
@@ -1654,24 +1654,24 @@ const DWSSBIMDashboard = () => {
                 objects: objectIds, 
                 bindingStatus: isHistoricalFileBindingToCurrent ? 'current' : (bindingCart.hasHistoricalObjects ? 'history' : 'current'), 
                 linkedToCurrent: isHistoricalFileBindingToCurrent || !bindingCart.hasHistoricalObjects,
-                updateDate: updateDate // Update date
+                updateDate: updateDate // 更新日期
               }
             : f
         ));
       });
       
-      // Record activity log
+      // 记录活动日志
       const logEntry: ActivityLog = {
         id: Date.now(),
-        timestamp: currentTime.toLocaleString('en-US'),
+        timestamp: currentTime.toLocaleString('zh-CN'),
         user: currentUser,
         role: currentUser === 'Administrator' ? 'Admin' : 'Authorized User',
         action: 'FILE_BINDING_SUBMIT',
         target: 'File Binding',
         targetDetail: `${totalFiles} files, ${totalObjects} objects`,
-        details: `Associated file "${bindingCart.files[0].name.substring(0, 30)}..." with ${totalObjects} components${
-          isHistoricalFileBindingToCurrent ? ' (Historical file upgraded to current version)' : 
-          bindingCart.hasHistoricalObjects ? ' (Historical version)' : ''
+        details: `将文件 "${bindingCart.files[0].name.substring(0, 30)}..." 与 ${totalObjects} 个构件进行了关联${
+          isHistoricalFileBindingToCurrent ? '（历史文件升级为当前版本）' : 
+          bindingCart.hasHistoricalObjects ? '（历史版本）' : ''
         }`,
         ip: '192.168.1.100'
       };
@@ -1679,11 +1679,11 @@ const DWSSBIMDashboard = () => {
       setActivityLogs(prev => [logEntry, ...prev]);
       
       exitBindingMode();
-      alert('Binding relationship successfully submitted!' + (isHistoricalFileBindingToCurrent ? '\nHistorical version file has been upgraded to current version.' : ''));
+      alert('绑定关系已成功提交！' + (isHistoricalFileBindingToCurrent ? '\n历史版本文件已升级为当前版本。' : ''));
     }
   };
 
-  // Page exit confirmation function in binding mode
+  // 绑定模式下的页面退出确认函数
   const confirmExitBindingMode = (actionDescription: string): boolean => {
     if (!isBindingMode) return true;
     
@@ -1691,11 +1691,11 @@ const DWSSBIMDashboard = () => {
     const hasChanges = objectCount > 0 || bindingCart.files.length > 0;
     
     if (hasChanges) {
-      const confirmMessage = `You are in binding mode with unsaved binding relationships:\n\n` +
-        `• Files: ${bindingCart.files.length}\n` +
-        `• Components: ${objectCount}\n\n` +
-        `${actionDescription} will lose the current binding edits.\n\n` +
-        `Do you confirm leaving binding mode?`;
+      const confirmMessage = `您正在绑定模式中，有未保存的绑定关系：\n\n` +
+        `• 文件: ${bindingCart.files.length} 个\n` +
+        `• 构件: ${objectCount} 个\n\n` +
+        `${actionDescription}将会丢失当前的绑定编辑。\n\n` +
+        `是否确认离开绑定模式？`;
       
       if (confirm(confirmMessage)) {
         exitBindingMode();
@@ -1703,15 +1703,15 @@ const DWSSBIMDashboard = () => {
       }
       return false;
     } else {
-      // No actual changes, exit binding mode directly
+      // 没有实际更改，直接退出绑定模式
       exitBindingMode();
       return true;
     }
   };
 
-  // Handle navigation to detail page - Add binding mode check
+  // 处理导航到详情页面 - 添加绑定模式检查
   const handleNavigateToDetail = (item, type) => {
-    if (!confirmExitBindingMode('Navigating to detail page')) {
+    if (!confirmExitBindingMode('导航到详情页面')) {
       return;
     }
     setDetailItem(item);
@@ -1723,11 +1723,11 @@ const DWSSBIMDashboard = () => {
     setDetailItem(null);
   };
 
-  // Handle model version change
+  // 处理模型版本变化
   const handleModelVersionChange = (version) => {
-    // Switching to historical version is not allowed in binding mode
+    // 绑定模式下不允许切换到历史版本
     if (isBindingMode && version !== 'current') {
-      alert('Switching to historical version is not allowed in binding mode. Please exit binding mode before switching versions.');
+      alert('绑定模式下不允许切换到历史版本。请先退出绑定模式后再切换版本。');
       return;
     }
     
@@ -1738,19 +1738,19 @@ const DWSSBIMDashboard = () => {
       setViewMode('historical');
     }
     
-    // When switching versions, clear all highlight items and filters (equivalent to pressing the clear button)
+    // 切换版本时，清除所有高光项和筛选项（相当于按了清除按钮）
     clearAllUserSelections();
     
-    // Special handling if in binding mode and there are historical objects
+    // 如果在绑定模式，且有历史对象，需要特殊处理
     if (isBindingMode && bindingCart.hasHistoricalObjects) {
       if (version === 'current') {
-        // Warn the user
-        alert('The current binding cart contains historical version components. Please note that these components may not display correctly in the current view.');
+        // 警告用户
+        alert('当前绑定购物车中包含历史版本构件，请注意在当前视图下可能无法正确显示这些构件。');
       }
     }
   };
 
-  // Historical view toggle function
+  // 历史视图切换函数
   const handleToggleHistoricalView = () => {
     if (!floatingPanel.componentInfo) return;
     
@@ -1762,21 +1762,21 @@ const DWSSBIMDashboard = () => {
     }));
     
     if (newIsHistoricalView) {
-      // Switch to historical view mode
+      // 切换到历史视图模式
       setSelectedModelVersion(floatingPanel.componentInfo.historicalVersionId);
       setViewMode('historical');
       
-      // In historical view, highlight bound components
-      // Since historical component bindings usually maintain the same component ID, we directly highlight this ID
+      // 在历史视图中，高光绑定的构件
+      // 由于历史构件绑定通常保持相同的构件ID，我们直接高光这个ID
       setManualHighlightSet([floatingPanel.componentInfo.componentId]);
     } else {
-      // Switch back to current view mode - Fix: always switch to current version
-      const targetVersion = floatingPanel.componentInfo.currentVersionId; // Use current version ID from historical component info
+      // 切换回当前视图模式 - 修复：始终切换到current版本
+      const targetVersion = floatingPanel.componentInfo.currentVersionId; // 使用历史构件信息中的当前版本ID
       setSelectedModelVersion(targetVersion);
       setViewMode(targetVersion === 'current' ? 'current' : 'historical');
       
-      // In current view, highlight corresponding current version components
-      // Find components with the same ID and current version, if not found highlight the original ID
+      // 在当前视图中，高光对应的当前版本构件
+      // 查找ID相同版本为current的构件，如果找不到则高光原ID
       const currentComponent = components.find(c => 
         c.id === floatingPanel.componentInfo.componentId && 
         c.modelVersionId === targetVersion
@@ -1785,15 +1785,15 @@ const DWSSBIMDashboard = () => {
       if (currentComponent) {
         setManualHighlightSet([currentComponent.id]);
       } else {
-        // If current version component not found, still try to highlight component with the same ID
+        // 如果找不到当前版本构件，仍然尝试高光相同ID的构件
         setManualHighlightSet([floatingPanel.componentInfo.componentId]);
       }
     }
   };
 
-  // Close historical view floating panel
+  // 关闭历史视图浮窗
   const handleCloseFloatingPanel = () => {
-    // Save current historical version state
+    // 保存当前的历史版本状态
     const wasInHistoricalView = floatingPanel.isHistoricalView;
     const currentHistoricalVersion = selectedModelVersion;
     
@@ -1803,36 +1803,36 @@ const DWSSBIMDashboard = () => {
       isHistoricalView: false
     });
     
-    // If currently in historical view mode, maintain the current historical version instead of restoring to the original version
+    // 如果当前在历史视图模式，保持在当前历史版本而不恢复到原始版本
     if (wasInHistoricalView && currentHistoricalVersion !== 'current') {
-      // Maintain the current historical version view
+      // 保持当前的历史版本视图
       setViewMode('historical');
-      // selectedModelVersion is already the correct historical version, no need to modify
+      // selectedModelVersion 已经是正确的历史版本，无需修改
     }
     
-    // Maintain the current selection state and highlight effects, don't clear them
-    // Comment out the following clearing operations:
+    // 保持当前的选中状态和高光效果，不清除它们
+    // 注释掉以下清除操作：
     // setManualHighlightSet([]);
     // setSelectedRISC(null);
     // setSelectedFile(null);
   };
 
-  // Send invitation
+  // 发送邀请
   const handleSendInvite = () => {
     if (!inviteEmail || !inviteRole) {
-      alert('Please fill in email and select a role');
+      alert('请填写邮箱和选择角色');
       return;
     }
     
-    // Validate email format
+    // 验证邮箱格式
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(inviteEmail)) {
-      alert('Please enter a valid email address');
+      alert('请输入有效的邮箱地址');
       return;
     }
     
-    // Simulate sending invitation
-    alert(`Invitation email sent to ${inviteEmail}, role: ${inviteRole}`);
+    // 模拟发送邀请
+    alert(`已向 ${inviteEmail} 发送邀请邮件，角色为：${inviteRole}`);
     setShowAdminInviteModal(false);
     setInviteEmail('');
     setInviteRole('');
@@ -1847,18 +1847,18 @@ const DWSSBIMDashboard = () => {
     }
   };
 
-  // Check actual binding status - supports three binding states: current, history, deleted
+  // 检查实际绑定状态 - 支持三种绑定状态：current、history、deleted
   const getActualBindingStatus = (item) => {
-    // If it's a historical binding status
+    // 如果是历史绑定状态
     if (item.bindingStatus === 'history') {
-      // If linkedToCurrent is false, it means the component no longer exists in the latest version - deleted entry
+      // 如果linkedToCurrent为false，表示构件在最新版本中已不存在 - 删除条目
       if (!item.linkedToCurrent) {
         return 'deleted';
       }
-      // If linkedToCurrent is true, it means the component still exists in the latest version - historical entry
+      // 如果linkedToCurrent为true，表示构件在最新版本中仍存在 - 历史条目
       return 'history';
     }
-    // Default return current status
+    // 默认返回当前状态
     return item.bindingStatus;
   };
 
@@ -1876,13 +1876,13 @@ const DWSSBIMDashboard = () => {
     const actualStatus = getActualBindingStatus(item);
     switch (actualStatus) {
       case 'current': return null;
-      case 'history': return 'Historical Version Association';
-      case 'deleted': return 'Deleted Item - Component No Longer Exists';
+      case 'history': return '历史版本关联';
+      case 'deleted': return '删除条目 - 构件已不存在';
       default: return null;
     }
   };
 
-  // Date picker card component - Left panel version
+  // 日期选择器卡片组件 - 左侧面板版本
   const DatePickerCardLeft = ({ isVisible, onClose, startDate, endDate, onStartDateChange, onEndDateChange, title }) => {
     if (!isVisible) return null;
 
@@ -1893,7 +1893,7 @@ const DWSSBIMDashboard = () => {
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
-            title="Close Date Picker"
+            title="关闭日期选择器"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1901,23 +1901,23 @@ const DWSSBIMDashboard = () => {
         
         <div className="space-y-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+            <label className="block text-xs text-gray-500 mb-1">开始日期</label>
             <input 
               type="date" 
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
               className="w-full border rounded px-2 py-1 text-xs"
-              title="Select Start Date"
+              title="选择开始日期"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">End Date</label>
+            <label className="block text-xs text-gray-500 mb-1">结束日期</label>
             <input 
               type="date" 
               value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
               className="w-full border rounded px-2 py-1 text-xs"
-              title="Select End Date"
+              title="选择结束日期"
             />
           </div>
           <div className="flex justify-end space-x-2 pt-2 border-t">
@@ -1928,13 +1928,13 @@ const DWSSBIMDashboard = () => {
               }}
               className="text-xs text-gray-500 hover:text-gray-700"
             >
-              Clear
+              清除
             </button>
             <button 
               onClick={onClose}
               className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
             >
-              Confirm
+              确定
             </button>
           </div>
         </div>
@@ -1942,7 +1942,7 @@ const DWSSBIMDashboard = () => {
     );
   };
 
-  // Date picker card component - Right panel version
+  // 日期选择器卡片组件 - 右侧面板版本
   const DatePickerCardRight = ({ isVisible, onClose, startDate, endDate, onStartDateChange, onEndDateChange, title }) => {
     if (!isVisible) return null;
 
@@ -1953,7 +1953,7 @@ const DWSSBIMDashboard = () => {
           <button 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600"
-            title="Close Date Picker"
+            title="关闭日期选择器"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1961,23 +1961,23 @@ const DWSSBIMDashboard = () => {
         
         <div className="space-y-3">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Start Date</label>
+            <label className="block text-xs text-gray-500 mb-1">开始日期</label>
             <input 
               type="date" 
               value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
               className="w-full border rounded px-2 py-1 text-xs"
-              title="Select Start Date"
+              title="选择开始日期"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">End Date</label>
+            <label className="block text-xs text-gray-500 mb-1">结束日期</label>
             <input 
               type="date" 
               value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
               className="w-full border rounded px-2 py-1 text-xs"
-              title="Select End Date"
+              title="选择结束日期"
             />
           </div>
           <div className="flex justify-end space-x-2 pt-2 border-t">
@@ -1988,13 +1988,13 @@ const DWSSBIMDashboard = () => {
               }}
               className="text-xs text-gray-500 hover:text-gray-700"
             >
-              Clear
+              清除
             </button>
             <button 
               onClick={onClose}
               className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
             >
-              Confirm
+              确定
             </button>
           </div>
         </div>
@@ -2002,7 +2002,7 @@ const DWSSBIMDashboard = () => {
     );
   };
 
-  // Invite user modal
+  // 邀请用户模态框
   const InviteUserModal = () => {
     if (!showInviteModal) return null;
 
@@ -2010,7 +2010,7 @@ const DWSSBIMDashboard = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Invite Member</h3>
+            <h3 className="text-lg font-semibold">邀请成员</h3>
             <button 
               onClick={() => {
                 setShowInviteModal(false);
@@ -2026,47 +2026,47 @@ const DWSSBIMDashboard = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Assign Role
+                分配角色
               </label>
-              <div className="text-xs text-gray-500 mb-2">* Required field</div>
+              <div className="text-xs text-gray-500 mb-2">* 配备角色</div>
               <select 
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value)}
                 className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                title="Select User Role"
+                title="选择用户角色"
               >
-                <option value="">Project Member ×</option>
-                <option value="View-only User">View-only User</option>
-                <option value="Authorized User">Authorized User</option>
-                <option value="Admin">Admin</option>
+                <option value="">项目成员 ×</option>
+                <option value="View-only User">普通用户 (View-only User)</option>
+                <option value="Authorized User">授权用户 (Authorized User)</option>
+                <option value="Admin">管理员 (Admin)</option>
               </select>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Enter Email
+                输入邮箱
               </label>
-              <div className="text-xs text-gray-500 mb-2">* Enter email address</div>
+              <div className="text-xs text-gray-500 mb-2">* 输入邮箱</div>
               <div className="relative">
                 <input 
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="Enter email address here, e.g. abc@jarvis.com"
+                  placeholder="在此处输入邀请人员邮箱地址，例如 abc@jarvis.com"
                   className="w-full border rounded-md px-3 py-2 pr-16 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                  <button className="p-1 text-green-600 hover:text-green-700" title="Verify Email">
+                  <button className="p-1 text-green-600 hover:text-green-700" title="验证邮箱">
                     <CheckCircle className="w-4 h-4" />
                   </button>
-                  <button className="p-1 text-gray-400 hover:text-gray-600" title="Send Email">
+                  <button className="p-1 text-gray-400 hover:text-gray-600" title="发送邮件">
                     <Mail className="w-4 h-4" />
                   </button>
                 </div>
               </div>
               <div className="mt-2 flex items-center text-xs text-blue-600">
                 <Info className="w-3 h-3 mr-1" />
-                <span>Enter email addresses, separate multiple recipients with line breaks for batch invites</span>
+                <span>输入邀请人员邮箱，可通过换行分隔不同的成员批量邀请</span>
               </div>
             </div>
           </div>
@@ -2076,7 +2076,7 @@ const DWSSBIMDashboard = () => {
               onClick={handleSendInvite}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              Send Invitation
+              发送邀请
             </button>
           </div>
         </div>
@@ -2084,7 +2084,7 @@ const DWSSBIMDashboard = () => {
     );
   };
 
-  // Quick comparison component
+  // 快速对比组件
   const QuickComparePanel = () => {
     if (!showQuickCompare || !compareData) return null;
 
@@ -2098,12 +2098,12 @@ const DWSSBIMDashboard = () => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold flex items-center">
                 <GitCompare className="w-5 h-5 mr-2" />
-                Quick Compare - {isRISC ? 'RISC Form' : 'File'} Version View
+                快速对比 - {isRISC ? 'RISC表单' : '文件'} 版本视图
               </h3>
               <button 
                 onClick={() => setShowQuickCompare(false)}
                 className="p-2 hover:bg-gray-100 rounded-full"
-                title="Close comparison window"
+                title="关闭对比窗口"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2111,32 +2111,32 @@ const DWSSBIMDashboard = () => {
           </div>
           
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-            {/* Basic information */}
+            {/* 基本信息 */}
             <div className="mb-6">
-              <h4 className="font-medium mb-3">{isRISC ? 'RISC Form' : 'File'} Information</h4>
+              <h4 className="font-medium mb-3">{isRISC ? 'RISC表单' : '文件'}信息</h4>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-600">{isRISC ? 'Request No.: ' : 'File Name: '}</span>
+                    <span className="text-gray-600">{isRISC ? '请求编号：' : '文件名：'}</span>
                     <span className="font-medium">{isRISC ? (item as RiscForm).requestNo : (item as FileItem).name}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Status: </span>
+                    <span className="text-gray-600">状态：</span>
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       item.bindingStatus === 'history' ? 'bg-orange-100 text-orange-800' : 
                       'bg-green-100 text-green-800'
                     }`}>
-                      {item.bindingStatus === 'history' ? 'Historical Version' : 'Current Version'}
+                      {item.bindingStatus === 'history' ? '历史版本' : '当前版本'}
                     </span>
                   </div>
                   {!isRISC && (
                     <>
                       <div>
-                        <span className="text-gray-600">Upload Date: </span>
+                        <span className="text-gray-600">上传日期：</span>
                         <span className="font-medium">{(item as FileItem).uploadDate}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Update Date: </span>
+                        <span className="text-gray-600">更新日期：</span>
                         <span className="font-medium">{item.updateDate}</span>
                       </div>
                     </>
@@ -2144,11 +2144,11 @@ const DWSSBIMDashboard = () => {
                   {isRISC && (
                     <>
                       <div>
-                        <span className="text-gray-600">Update Date: </span>
+                        <span className="text-gray-600">更新日期：</span>
                         <span className="font-medium">{item.updateDate}</span>
                       </div>
                       <div>
-                        <span className="text-gray-600">Created By: </span>
+                        <span className="text-gray-600">创建者：</span>
                         <span className="font-medium">{(item as RiscForm).createdBy}</span>
                       </div>
                     </>
@@ -2157,12 +2157,12 @@ const DWSSBIMDashboard = () => {
               </div>
             </div>
 
-            {/* Associated objects comparison */}
+            {/* 关联对象对比 */}
             <div className="mb-6">
-              <h4 className="font-medium mb-3">Associated Objects Comparison</h4>
+              <h4 className="font-medium mb-3">关联对象对比</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="border rounded-lg p-4">
-                  <h5 className="text-sm font-medium mb-2 text-blue-700">Current Version ({currentVersion})</h5>
+                  <h5 className="text-sm font-medium mb-2 text-blue-700">当前版本 ({currentVersion})</h5>
                   <div className="space-y-2">
                     {components
                       .filter(obj => obj.modelVersionId === 'current' && item.objects.some(id => id.replace('-OLD', '') === obj.id))
@@ -2170,14 +2170,14 @@ const DWSSBIMDashboard = () => {
                         <div key={obj.id} className="bg-blue-50 p-2 rounded text-sm">
                           <div className="font-medium">{obj.name}</div>
                           <div className="text-xs text-gray-600">
-                            Object Group: {obj.objectGroup} | {obj.properties.material}
+                            对象组：{obj.objectGroup} | {obj.properties.material}
                           </div>
                         </div>
                       ))}
                   </div>
                 </div>
                 <div className="border rounded-lg p-4">
-                  <h5 className="text-sm font-medium mb-2 text-orange-700">Historical Version ({targetVersion})</h5>
+                  <h5 className="text-sm font-medium mb-2 text-orange-700">历史版本 ({targetVersion})</h5>
                   <div className="space-y-2">
                     {item.objects.map(objId => {
                       const obj = components.find(o => o.id === objId);
@@ -2185,12 +2185,12 @@ const DWSSBIMDashboard = () => {
                         <div key={obj.id} className="bg-orange-50 p-2 rounded text-sm">
                           <div className="font-medium">{obj.name}</div>
                           <div className="text-xs text-gray-600">
-                            Object Group: {obj.objectGroup} | {obj.properties.material}
+                            对象组：{obj.objectGroup} | {obj.properties.material}
                           </div>
                         </div>
                       ) : (
                         <div key={objId} className="bg-red-50 p-2 rounded text-sm text-red-600">
-                          {objId} (Deleted)
+                          {objId} (已删除)
                         </div>
                       );
                     })}
@@ -2199,10 +2199,10 @@ const DWSSBIMDashboard = () => {
               </div>
             </div>
 
-            {/* Change description */}
+            {/* 变更说明 */}
             {item.changes && item.changes.length > 0 && (
               <div className="mb-6">
-                <h4 className="font-medium mb-3">Change Description</h4>
+                <h4 className="font-medium mb-3">变更说明</h4>
                 <div className="bg-yellow-50 p-4 rounded-lg">
                   <ul className="list-disc list-inside space-y-1 text-sm">
                     {item.changes.map((change, idx) => (
@@ -2213,12 +2213,12 @@ const DWSSBIMDashboard = () => {
               </div>
             )}
 
-            {/* Action buttons */}
+            {/* 操作按钮 */}
             <div className="flex justify-end space-x-3 pt-4 border-t">
               <button 
                 onClick={() => {
                   setShowQuickCompare(false);
-                  // Switch to corresponding model version
+                  // 切换到对应的模型版本
                   if (item.bindingStatus === 'history') {
                     setSelectedModelVersion('v1.8');
                     setViewMode('historical');
@@ -2227,10 +2227,10 @@ const DWSSBIMDashboard = () => {
                     setViewMode('current');
                   }
                   
-                  // Highlight associated components
+                  // 高亮显示关联的构件
                   setManualHighlightSet(item.objects);
                   
-                  // Clear other selection states
+                  // 清除其他选择状态
                   if (type === 'risc') {
                     setSelectedRISC(item.id);
                     setSelectedFile(null);
@@ -2242,13 +2242,13 @@ const DWSSBIMDashboard = () => {
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
               >
                 <Layers className="w-4 h-4 mr-2" />
-                Go to Associated Model
+                跳转到关联模型
               </button>
               <button 
                 onClick={() => setShowQuickCompare(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
               >
-                Close
+                关闭
               </button>
             </div>
           </div>
@@ -2257,18 +2257,18 @@ const DWSSBIMDashboard = () => {
     );
   };
 
-  // Login page
+  // 登录页面
   const LoginPage = () => (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">DWSS-BIM</h1>
-          <p className="text-gray-600">Digital Works Supervision System - BIM Integration Platform</p>
+          <p className="text-gray-600">数字工程监督系统 - BIM 集成平台</p>
         </div>
         
         <button 
           onClick={() => {
-            if (confirmExitBindingMode('Login')) {
+            if (confirmExitBindingMode('登录')) {
               setCurrentView('project-map');
             }
           }}
@@ -2279,36 +2279,35 @@ const DWSSBIMDashboard = () => {
         
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
-            First login requires authorization to access your CDE account
+            首次登录需要授权访问您的CDE账户
           </p>
         </div>
       </div>
     </div>
   );
 
-  // Project map page
+  // 项目地图页面
   const ProjectMapPage = () => (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow-sm px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold">DWSS - BIM Dashboard</h1>
-          <span className="text-sm text-gray-500">Project: {selectedProject}</span>
           <button 
             onClick={() => {
-              if (confirmExitBindingMode('Enter Dashboard')) {
+              if (confirmExitBindingMode('进入仪表板')) {
                 setCurrentView('dashboard');
               }
             }}
             className="text-blue-600 hover:text-blue-800"
           >
-            Enter Dashboard
+            进入仪表板
           </button>
         </div>
       </div>
       
       <div className="p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-medium mb-4">Project Map</h2>
+          <h2 className="text-lg font-medium mb-4">项目地图</h2>
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-yellow-100 p-4 rounded-lg border-l-4 border-yellow-400">
@@ -2326,7 +2325,7 @@ const DWSSBIMDashboard = () => {
             </div>
             
             <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
-              <p className="text-gray-500">Hong Kong Project Distribution Map</p>
+              <p className="text-gray-500">香港项目分布地图</p>
             </div>
           </div>
         </div>
@@ -2334,9 +2333,9 @@ const DWSSBIMDashboard = () => {
     </div>
   );
 
-  // Admin backend page
+  // 管理员后台页面
   const AdminPage = () => {
-    // User invitation modal in admin page
+    // 管理员页面内的邀请用户模态框
     const AdminInviteUserModal = () => {
       if (!showAdminInviteModal) return null;
 
@@ -2344,7 +2343,7 @@ const DWSSBIMDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Invite Member</h3>
+              <h3 className="text-lg font-semibold">邀请成员</h3>
               <button 
                 onClick={() => {
                   setShowAdminInviteModal(false);
@@ -2352,7 +2351,7 @@ const DWSSBIMDashboard = () => {
                   setInviteRole('');
                 }}
                 className="text-gray-400 hover:text-gray-600"
-                title="Close"
+                title="关闭"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2361,47 +2360,47 @@ const DWSSBIMDashboard = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assign Role
+                  分配角色
                 </label>
-                <div className="text-xs text-gray-500 mb-2">* Required field</div>
+                <div className="text-xs text-gray-500 mb-2">* 配备角色</div>
                 <select 
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
                   className="w-full border rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  title="Select User Role"
+                  title="选择用户角色"
                 >
-                  <option value="">Project Member ×</option>
-                  <option value="View-only User">View-only User</option>
-                  <option value="Authorized User">Authorized User</option>
-                  <option value="Admin">Admin</option>
+                  <option value="">项目成员 ×</option>
+                  <option value="View-only User">普通用户 (View-only User)</option>
+                  <option value="Authorized User">授权用户 (Authorized User)</option>
+                  <option value="Admin">管理员 (Admin)</option>
                 </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Enter Email
+                  输入邮箱
                 </label>
-                <div className="text-xs text-gray-500 mb-2">* Enter email address</div>
+                <div className="text-xs text-gray-500 mb-2">* 输入邮箱</div>
                 <div className="relative">
                   <input 
                     type="email"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="Enter email address here, e.g. abc@jarvis.com"
+                    placeholder="在此处输入邀请人员邮箱地址，例如 abc@jarvis.com"
                     className="w-full border rounded-md px-3 py-2 pr-16 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                    <button className="p-1 text-green-600 hover:text-green-700" title="Verify Email">
+                    <button className="p-1 text-green-600 hover:text-green-700" title="验证邮箱">
                       <CheckCircle className="w-4 h-4" />
                     </button>
-                    <button className="p-1 text-gray-400 hover:text-gray-600" title="Send Email">
+                    <button className="p-1 text-gray-400 hover:text-gray-600" title="发送邮件">
                       <Mail className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center text-xs text-blue-600">
                   <Info className="w-3 h-3 mr-1" />
-                  <span>Enter email addresses, separate multiple recipients with line breaks for batch invites</span>
+                  <span>输入邀请人员邮箱，可通过换行分隔不同的成员批量邀请</span>
                 </div>
               </div>
             </div>
@@ -2411,7 +2410,7 @@ const DWSSBIMDashboard = () => {
                 onClick={handleSendInvite}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                Send Invitation
+                发送邀请
               </button>
             </div>
           </div>
@@ -2419,26 +2418,26 @@ const DWSSBIMDashboard = () => {
       );
     };
 
-    // User management page
+    // 用户管理页面
     const UserManagementPage = () => (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">User and Role Management</h2>
+          <h2 className="text-lg font-medium">用户与角色管理</h2>
           <button 
             onClick={() => setShowAdminInviteModal(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Invite User
+            邀请用户
           </button>
         </div>
         
-        {/* User search */}
+        {/* 用户搜索 */}
         <div className="mb-4">
           <input 
             type="text"
             value={userSearchText}
             onChange={(e) => setUserSearchText(e.target.value)}
-            placeholder="Search by member name..."
+            placeholder="按成员名字搜索..."
             className="w-full border rounded px-3 py-2 text-sm"
           />
         </div>
@@ -2447,10 +2446,10 @@ const DWSSBIMDashboard = () => {
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="text-left py-3 px-4 font-medium text-sm">User</th>
-                <th className="text-left py-3 px-4 font-medium text-sm">Email</th>
-                <th className="text-left py-3 px-4 font-medium text-sm">Role</th>
-                <th className="text-left py-3 px-4 font-medium text-sm">Actions</th>
+                <th className="text-left py-3 px-4 font-medium text-sm">用户</th>
+                <th className="text-left py-3 px-4 font-medium text-sm">邮箱</th>
+                <th className="text-left py-3 px-4 font-medium text-sm">角色</th>
+                <th className="text-left py-3 px-4 font-medium text-sm">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -2462,20 +2461,20 @@ const DWSSBIMDashboard = () => {
                     <select 
                       value={user.role} 
                       className="border rounded px-2 py-1 text-xs"
-                      title="Change user role"
+                      title="修改用户角色"
                       onChange={(e) => {
                         setAdminUsers(prev => prev.map(u => 
                           u.id === user.id ? {...u, role: e.target.value} : u
                         ));
                       }}
                     >
-                      <option value="View-only User">View-only User</option>
-                      <option value="Authorized User">Authorized User</option>
-                      <option value="Admin">Admin</option>
+                      <option value="View-only User">普通用户</option>
+                      <option value="Authorized User">授权用户</option>
+                      <option value="Admin">管理员</option>
                     </select>
                   </td>
                   <td className="py-3 px-4">
-                    <button className="text-red-600 hover:text-red-800 text-xs" title="Delete user">Delete</button>
+                    <button className="text-red-600 hover:text-red-800 text-xs" title="删除用户">删除</button>
                   </td>
                 </tr>
               ))}
@@ -2485,36 +2484,36 @@ const DWSSBIMDashboard = () => {
       </div>
     );
 
-    // Activity log page
+    // 活动日志页面
     const ActivityLogsPage = () => (
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">Activity Logs</h2>
-          <button className="bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200" title="Export CSV file">
-              Export CSV
+          <h2 className="text-lg font-medium">活动日志</h2>
+          <button className="bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200" title="导出CSV文件">
+            导出CSV
           </button>
         </div>
         
-        {/* Basic filtering */}
+        {/* 基础筛选 */}
         <div className="space-y-3 mb-4">
           <div className="grid grid-cols-2 gap-2">
             <input 
               type="text"
               value={logFilters.user}
               onChange={(e) => setLogFilters(prev => ({ ...prev, user: e.target.value }))}
-              placeholder="Filter by user..."
+              placeholder="按用户筛选..."
               className="border rounded px-3 py-1.5 text-xs"
             />
             <select 
               value={logFilters.role}
               onChange={(e) => setLogFilters(prev => ({ ...prev, role: e.target.value }))}
               className="border rounded px-3 py-1.5 text-xs"
-              title="Filter by role"
+              title="按角色筛选"
             >
-              <option value="">All roles</option>
-                <option value="Admin">Administrator</option>
-                <option value="Authorized User">Authorized user</option>
-                <option value="View-only User">Normal user</option>
+              <option value="">所有角色</option>
+              <option value="Admin">管理员</option>
+              <option value="Authorized User">授权用户</option>
+              <option value="View-only User">普通用户</option>
             </select>
           </div>
           
@@ -2524,14 +2523,14 @@ const DWSSBIMDashboard = () => {
               value={logFilters.startDate}
               onChange={(e) => setLogFilters(prev => ({ ...prev, startDate: e.target.value }))}
               className="border rounded px-3 py-1.5 text-xs"
-              title="Start date"
+              title="开始日期"
             />
             <input 
               type="date"
               value={logFilters.endDate}
               onChange={(e) => setLogFilters(prev => ({ ...prev, endDate: e.target.value }))}
               className="border rounded px-3 py-1.5 text-xs"
-              title="End date"
+              title="结束日期"
             />
           </div>
           
@@ -2539,7 +2538,7 @@ const DWSSBIMDashboard = () => {
             type="text"
             value={logFilters.searchText}
             onChange={(e) => setLogFilters(prev => ({ ...prev, searchText: e.target.value }))}
-            placeholder="Full-text search (target details/action details)..."
+            placeholder="全文搜索（目标详情/操作详情）..."
             className="w-full border rounded px-3 py-1.5 text-xs"
           />
         </div>
@@ -2548,10 +2547,10 @@ const DWSSBIMDashboard = () => {
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-gray-50">
               <tr className="border-b">
-                <th className="text-left py-2 px-3">Time</th>
-                <th className="text-left py-2 px-3">User</th>
-                <th className="text-left py-2 px-3">Action</th>
-                <th className="text-left py-2 px-3">Details</th>
+                <th className="text-left py-2 px-3">时间</th>
+                <th className="text-left py-2 px-3">用户</th>
+                <th className="text-left py-2 px-3">操作</th>
+                <th className="text-left py-2 px-3">详情</th>
               </tr>
             </thead>
             <tbody>
@@ -2584,8 +2583,8 @@ const DWSSBIMDashboard = () => {
         <div className="bg-white shadow-sm px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <h1 className="text-xl font-semibold">Admin Backend</h1>
-              {/* Subpage navigation */}
+              <h1 className="text-xl font-semibold">管理员后台</h1>
+              {/* 子页面导航 */}
               <div className="flex space-x-4">
                 <button
                   onClick={() => setAdminSubView('users')}
@@ -2595,7 +2594,7 @@ const DWSSBIMDashboard = () => {
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  User Management
+                  用户管理
                 </button>
                 <button
                   onClick={() => setAdminSubView('logs')}
@@ -2605,19 +2604,19 @@ const DWSSBIMDashboard = () => {
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  Activity Logs
+                  活动日志
                 </button>
               </div>
             </div>
             <button 
               onClick={() => {
-                if (confirmExitBindingMode('Return to Dashboard')) {
+                if (confirmExitBindingMode('返回仪表板')) {
                   setCurrentView('dashboard');
                 }
               }}
               className="text-blue-600 hover:text-blue-800"
             >
-              Return to Dashboard
+              返回仪表板
             </button>
           </div>
         </div>
@@ -2856,17 +2855,17 @@ const DWSSBIMDashboard = () => {
       <div className="space-y-4">
         {/* 统计信息 */}
         <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="text-sm font-medium text-blue-800 mb-2">Binding Statistics</div>
+          <div className="text-sm font-medium text-blue-800 mb-2">绑定统计</div>
           <div className="text-xs text-blue-600 space-y-1">
-            <div>Files: {bindingCart.files.length} </div>
-            <div>Components: {bindingCart.objects.length} </div>
+            <div>文件: {bindingCart.files.length} 个</div>
+            <div>构件: {bindingCart.objects.length} 个</div>
             {bindingCart.objects.length > 0 && (
               <div className="text-xs text-gray-600 mt-2">
-                Component Version: {bindingCart.objects[0]?.version || 'N/A'}
+                构件版本: {bindingCart.objects[0]?.version || 'N/A'}
                 {bindingCart.hasHistoricalObjects && (
                   <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center inline-flex">
                     <History className="w-3 h-3 mr-1" />
-                    Contains Historical Version
+                    包含历史版本
                   </span>
                 )}
               </div>
@@ -2879,7 +2878,7 @@ const DWSSBIMDashboard = () => {
           <div>
             <div className="text-xs font-medium text-gray-600 mb-2 flex items-center">
               <FileText className="w-3 h-3 mr-1" />
-              Selected Files
+              选中的文件
             </div>
             <div className="space-y-2">
               {bindingCart.files.map(file => (
@@ -2887,12 +2886,12 @@ const DWSSBIMDashboard = () => {
                   <div className="font-medium truncate">{file.name.substring(0, 40)}...</div>
                   <div className="text-xs text-gray-500">{file.type}</div>
                   {file.uploadedBy === currentUser && (
-                    <div className="text-xs text-blue-600">I uploaded</div>
+                    <div className="text-xs text-blue-600">我上传的</div>
                   )}
                   {file.bindingStatus === 'history' && (
                     <div className="text-xs text-orange-600 flex items-center">
                       <History className="w-3 h-3 mr-1" />
-                      Historical Binding
+                      历史绑定
                     </div>
                   )}
                 </div>
@@ -2906,7 +2905,7 @@ const DWSSBIMDashboard = () => {
           <div>
             <div className="text-xs font-medium text-gray-600 mb-2 flex items-center">
               <Layers className="w-3 h-3 mr-1" />
-              Components ({bindingCart.objects.length})
+              构件 ({bindingCart.objects.length})
             </div>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {bindingCart.objects.map((obj, index) => (
@@ -2918,7 +2917,7 @@ const DWSSBIMDashboard = () => {
                   <div className="flex items-center justify-between">
                     <div 
                       className="flex-1 min-w-0 pr-3 cursor-default"
-                      title={`Hover to view the position of the component in the BIM view: ${obj.name}`}
+                      title={`悬浮查看构件在BIM视图中的位置: ${obj.name}`}
                     >
                       <div className="text-sm font-medium text-gray-900 flex items-center">
                         {obj.name}
@@ -2942,7 +2941,7 @@ const DWSSBIMDashboard = () => {
         {bindingCart.objects.length > 0 && !bindingCart.objects.every(obj => obj.modelVersionId === bindingCart.objects[0].modelVersionId) && (
           <div className="bg-red-50 border border-red-200 p-2 rounded">
             <div className="text-xs text-red-800 font-medium">⚠️ 版本冲突</div>
-            <div className="text-xs text-red-600">All components in the same binding must belong to the same version, but files can be bound to components of any version. Please remove components with inconsistent versions.</div>
+            <div className="text-xs text-red-600">同一绑定中的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。请移除不一致版本的构件。</div>
           </div>
         )}
         
@@ -2951,22 +2950,22 @@ const DWSSBIMDashboard = () => {
           <div className="bg-orange-50 border border-orange-200 p-2 rounded">
             <div className="text-xs text-orange-800 font-medium flex items-center">
               <History className="w-3 h-3 mr-1" />
-              Historical Version Binding
+              历史版本绑定
             </div>
-            <div className="text-xs text-orange-600">You are binding components with historical versions. A file can be bound to components of any version, but all components must belong to the same version. This binding will be visible in the corresponding version view.</div>
+            <div className="text-xs text-orange-600">您正在绑定历史版本的构件。一个文件可以绑定到任何版本的构件，但所有构件必须来自同一版本。此绑定将在相应版本视图下可见。</div>
           </div>
         )}
         
         {/* 提示信息 */}
         {bindingCart.files.length === 0 && (
           <div className="text-xs text-gray-500 text-center">
-            Please select a file to bind
+            请选择一个要绑定的文件
           </div>
         )}
         {bindingCart.files.length > 0 && bindingCart.objects.length === 0 && (
           <div className="text-xs text-gray-500 text-center">
-            Please select at least one component to bind<br/>
-            <span className="text-blue-600">Tip: You can switch files anytime</span>
+            请选择至少一个构件进行绑定<br/>
+            <span className="text-blue-600">提示：可以随时切换文件</span>
           </div>
         )}
       </div>
@@ -3038,7 +3037,7 @@ const DWSSBIMDashboard = () => {
     if (bindingCart.objects.length > 0) {
       const cartVersion = bindingCart.objects[0].version;
       if (versions[0] !== cartVersion) {
-        const confirmMessage = `There are components with version "${cartVersion}" in the cart.\nThe highlighted components are version "${versions[0]}".\n\nAll components in the same binding must belong to the same version, but files can be bound to components of any version.\n\nDo you want to clear the cart and add the highlighted components?`;
+        const confirmMessage = `购物车中已有版本为"${cartVersion}"的构件。\n高亮构件版本为"${versions[0]}"。\n\n同一绑定中的所有构件必须属于同一版本，但文件可以绑定到任何版本的构件。\n\n是否清空购物车并添加高亮构件？`;
         if (confirm(confirmMessage)) {
           setBindingCart(prev => ({
             ...prev,
@@ -3047,9 +3046,9 @@ const DWSSBIMDashboard = () => {
           }));
           // 添加成功后清除高亮
           clearAllHighlightsAfterAdd();
-          let message = `Successfully added ${newComponents.length} components to the binding cart`;
+          let message = `成功添加 ${newComponents.length} 个构件到绑定购物车`;
           if (alreadyInCartCount > 0) {
-            message += `\n(Automatically skipped ${alreadyInCartCount} components that are already in the cart)`;
+            message += `\n(已自动略过 ${alreadyInCartCount} 个已在购物车中的构件)`;
           }
           alert(message);
         } else {
@@ -3124,15 +3123,15 @@ const DWSSBIMDashboard = () => {
     ).length;
     
     if (addedCount > 0) {
-      let message = `Successfully added ${addedCount} components to the binding cart`;
+      let message = `成功添加 ${addedCount} 个构件到绑定购物车`;
       if (alreadyInCartCount > 0) {
-        message += `\n(Automatically skipped ${alreadyInCartCount} components that are already in the cart)`;
+        message += `\n(已自动略过 ${alreadyInCartCount} 个已在购物车中的构件)`;
       }
       alert(message);
     } else if (alreadyInCartCount > 0) {
-      alert(`All ${alreadyInCartCount} components are already in the cart, no need to add them again`);
+      alert(`所有 ${alreadyInCartCount} 个构件已在购物车中，无需重复添加`);
     } else {
-      alert('The selected components are already in the cart');
+      alert('选中的构件已经在购物车中');
     }
   };
 
@@ -3144,7 +3143,7 @@ const DWSSBIMDashboard = () => {
         const hasChanges = objectCount > 0 || bindingCart.files.length > 0;
         
         if (hasChanges) {
-          const message = 'You are in binding mode, leaving the page will lose the unsaved binding relationship. Are you sure you want to leave?';
+          const message = '您正在绑定模式中，离开页面将丢失未保存的绑定关系。确定要离开吗？';
           event.preventDefault();
           event.returnValue = message;
           return message;
@@ -3591,7 +3590,7 @@ const DWSSBIMDashboard = () => {
       setContextMenu({...contextMenu, visible: false});
     };
 
-    // 判断是否显示管理关联文件选项（只对白色条目显示） 
+    // 判断是否显示管理关联文件选项（只对白色条目显示）
     const shouldShowFileManagement = () => {
       if (!contextMenu.isFromTree) return !isViewOnlyUser() && !isBindingMode;
       
@@ -3645,7 +3644,7 @@ const DWSSBIMDashboard = () => {
             onClick={handleShowAllObjects}
           >
             <Eye className="w-4 h-4 mr-2 text-green-600" />
-            <span>Show all objects</span>
+            <span>显示所有对象</span>
           </div>
         )}
         
@@ -3655,7 +3654,7 @@ const DWSSBIMDashboard = () => {
             onClick={handleFileManagement}
           >
             <FileText className="w-4 h-4 mr-2 text-blue-600" />
-            <span>Manage associated files</span>
+            <span>管理关联文件</span>
           </div>
         )}
         
@@ -3665,7 +3664,7 @@ const DWSSBIMDashboard = () => {
             onClick={handleAddToBindingPanel}
           >
             <ShoppingCart className="w-4 h-4 mr-2 text-orange-600" />
-            <span>Add to binding panel</span>
+            <span>添加到绑定面板</span>
           </div>
         )}
         
@@ -3676,7 +3675,7 @@ const DWSSBIMDashboard = () => {
           onClick={() => setContextMenu({...contextMenu, visible: false})}
         >
           <X className="w-4 h-4 mr-2 text-gray-600" />
-          <span>Cancel</span>
+          <span>取消</span>
         </div>
       </div>
     );
@@ -3706,7 +3705,7 @@ const DWSSBIMDashboard = () => {
     const [showMyFilesOnly, setShowMyFilesOnly] = useState(false);
     
     // 固定的文件类型选项
-    const fileTypes = ['Construction Plan', 'Material Submission', 'Construction Drawing', 'Test Report'];
+    const fileTypes = ['施工方案', '物料提交', '施工图纸', '测试报告'];
     
     // 为ACC文件添加文件夹结构的状态
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['04', '4.1', '4.10', '4.2', '4.3']));
@@ -3718,15 +3717,15 @@ const DWSSBIMDashboard = () => {
     // 文件类型映射函数 - 根据文件夹类型映射到系统文件类型
     const mapACCFileType = (folderName: string) => {
       if (folderName.includes('Safety') || folderName.includes('Quality') || folderName.includes('Risk')) {
-        return 'Test Report';
+        return '测试报告';
       } else if (folderName.includes('Resources')) {
-        return 'Material Submission';
+        return '物料提交';
       } else if (folderName.includes('Method Statements') || folderName.includes('Statutory Approvals')) {
-        return 'Construction Plan';
+        return '施工方案';
       } else if (folderName.includes('Materials') || folderName.includes('Surveys') || folderName.includes('Technical Reports') || folderName.includes('Models') || folderName.includes('Drawings')) {
-        return 'Construction Drawing';
+        return '施工图纸';
       }
-      return 'Construction Plan'; // 默认类型
+      return '施工方案'; // 默认类型
     };
     
     // 模拟ACC平台的文件列表 - 按文件夹层级组织，添加正确的文件类型
@@ -3740,12 +3739,12 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-1', name: '1505-W-PHD-KFC-120-000105.pdf', type: 'Test Report', size: '2.4MB', date: '2023-10-15', content: '这是一份安全质量风险评估报告...' },
-                { id: 'acc-2', name: '1505-W-PHD-KFC-760-000003.pdf', type: 'Test Report', size: '3.8MB', date: '2023-11-02', content: '质量检测报告内容...' },
-                { id: 'acc-3', name: '1505-W-PHD-KFC-760-000004.pdf', type: 'Test Report', size: '5.1MB', date: '2023-11-10', content: '风险评估分析报告...' },
-                { id: 'acc-4', name: '1505-W-PHD-KFC-760-000044.pdf', type: 'Test Report', size: '1.2MB', date: '2023-12-05', content: '安全检查记录...' },
-                { id: 'acc-5', name: '1505-W-PHD-KFC-760-000050.pdf', type: 'Test Report', size: '4.5MB', date: '2023-12-20', content: '质量验收报告...' },
-                { id: 'acc-6', name: '1505-W-PHD-KFC-760-000057.pdf', type: 'Test Report', size: '1.8MB', date: '2024-01-08', content: '安全风险评估总结...' }
+                { id: 'acc-1', name: '1505-W-PHD-KFC-120-000105.pdf', type: '测试报告', size: '2.4MB', date: '2023-10-15', content: '这是一份安全质量风险评估报告...' },
+                { id: 'acc-2', name: '1505-W-PHD-KFC-760-000003.pdf', type: '测试报告', size: '3.8MB', date: '2023-11-02', content: '质量检测报告内容...' },
+                { id: 'acc-3', name: '1505-W-PHD-KFC-760-000004.pdf', type: '测试报告', size: '5.1MB', date: '2023-11-10', content: '风险评估分析报告...' },
+                { id: 'acc-4', name: '1505-W-PHD-KFC-760-000044.pdf', type: '测试报告', size: '1.2MB', date: '2023-12-05', content: '安全检查记录...' },
+                { id: 'acc-5', name: '1505-W-PHD-KFC-760-000050.pdf', type: '测试报告', size: '4.5MB', date: '2023-12-20', content: '质量验收报告...' },
+                { id: 'acc-6', name: '1505-W-PHD-KFC-760-000057.pdf', type: '测试报告', size: '1.8MB', date: '2024-01-08', content: '安全风险评估总结...' }
               ]
             }
           },
@@ -3754,8 +3753,8 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-7', name: '1505-W-PHD-KFC-760-000061.pdf', type: 'Construction Plan', size: '18.5MB', date: '2024-01-15', content: '法定审批文件内容...' },
-                { id: 'acc-8', name: '1505-W-PHD-KFC-760-000070.pdf', type: 'Construction Plan', size: '2.7MB', date: '2024-02-01', content: '施工许可证申请文件...' }
+                { id: 'acc-7', name: '1505-W-PHD-KFC-760-000061.pdf', type: '施工方案', size: '18.5MB', date: '2024-01-15', content: '法定审批文件内容...' },
+                { id: 'acc-8', name: '1505-W-PHD-KFC-760-000070.pdf', type: '施工方案', size: '2.7MB', date: '2024-02-01', content: '施工许可证申请文件...' }
               ]
             }
           },
@@ -3764,7 +3763,7 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-9', name: '1505-W-PHD-KFC-760-000153.pdf', type: 'Material Submission', size: '3.2MB', date: '2024-02-10', content: '资源配置计划文档...' }
+                { id: 'acc-9', name: '1505-W-PHD-KFC-760-000153.pdf', type: '物料提交', size: '3.2MB', date: '2024-02-10', content: '资源配置计划文档...' }
               ]
             }
           },
@@ -3773,10 +3772,10 @@ const DWSSBIMDashboard = () => {
             type: 'folder',
             children: {
               'files': [
-                { id: 'acc-10', name: '1505-W-PHD-KFC-785-000009.pdf', type: 'Construction Plan', size: '6.8MB', date: '2024-02-15', content: '施工工艺说明书...' },
-                { id: 'acc-11', name: '1831-W-PHD-KFC-410-000001.pdf', type: 'Construction Plan', size: '4.1MB', date: '2024-02-20', content: '方法声明文档...' },
-                { id: 'acc-12', name: '1831-W-PHD-KFC-760-000017.pdf', type: 'Construction Plan', size: '2.9MB', date: '2024-02-25', content: '施工技术方案...' },
-                { id: 'acc-13', name: '1831-W-PHD-KFC-760-000036.pdf', type: 'Construction Plan', size: '3.5MB', date: '2024-03-01', content: '工艺流程说明...' }
+                { id: 'acc-10', name: '1505-W-PHD-KFC-785-000009.pdf', type: '施工方案', size: '6.8MB', date: '2024-02-15', content: '施工工艺说明书...' },
+                { id: 'acc-11', name: '1831-W-PHD-KFC-410-000001.pdf', type: '施工方案', size: '4.1MB', date: '2024-02-20', content: '方法声明文档...' },
+                { id: 'acc-12', name: '1831-W-PHD-KFC-760-000017.pdf', type: '施工方案', size: '2.9MB', date: '2024-02-25', content: '施工技术方案...' },
+                { id: 'acc-13', name: '1831-W-PHD-KFC-760-000036.pdf', type: '施工方案', size: '3.5MB', date: '2024-03-01', content: '工艺流程说明...' }
               ]
             }
           },
@@ -3897,7 +3896,7 @@ const DWSSBIMDashboard = () => {
                       checked={selectedACCFiles.includes(file.id)}
                       onChange={() => toggleACCFileSelection(file.id)}
                       className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      title={`Select file: ${file.name}`}
+                      title={`选择文件: ${file.name}`}
                     />
                     <FileText className="w-4 h-4 mr-2 text-red-500" />
                     <div 
@@ -3914,7 +3913,7 @@ const DWSSBIMDashboard = () => {
                         setShowFilePreview(true);
                       }}
                       className="ml-2 p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                      title="View file content"
+                      title="查看文件内容"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -4071,28 +4070,28 @@ const DWSSBIMDashboard = () => {
         const accFile = allACCFiles.find(f => f.id === fileId);
         return {
           id: files.length + index + 1,
-          name: accFile?.name || 'Unnamed file',
+          name: accFile?.name || '未命名文件',
           uploadDate: new Date().toISOString().split('T')[0],
           updateDate: new Date().toISOString().split('T')[0],
-          type: accFile?.type || 'Unknown type',
+          type: accFile?.type || '未知类型',
           bindingStatus: 'current' as const,
           uploadedBy: currentUser,
           linkedToCurrent: true,
           objects: selectedComponentsForFiles,
           hydCode: {
-            project: 'Project A',
-            contractor: 'Contractor B',
-            location: 'Location C',
-            structure: 'Structure D',
-            space: 'Space E',
-            grid: 'Grid F',
-            cat: 'Category G'
+            project: '项目A',
+            contractor: '承包商B',
+            location: '位置C',
+            structure: '结构D',
+            space: '空间E',
+            grid: '网格F',
+            cat: '类别G'
           },
           version: 1
         };
       });
       
-      // Update file list
+      // 更新文件列表
       setFiles(prev => [...prev, ...newFiles]);
       resetUploadModal();
     };
@@ -4111,14 +4110,14 @@ const DWSSBIMDashboard = () => {
     const confirmDelete = () => {
       setIsDeleting(true);
       
-      // Simulate delete operation delay
+      // 模拟删除操作延迟
       setTimeout(() => {
-        // If it's a single file deletion
+        // 如果是单个文件删除
         if (fileToDelete !== null) {
           setFiles(prevFiles => prevFiles.filter(file => file.id !== fileToDelete));
           setDeleteSuccess({show: true, count: 1});
         } 
-        // If it's a bulk deletion
+        // 如果是批量删除
         else if (selectedFiles.length > 0) {
           setFiles(prevFiles => prevFiles.filter(file => !selectedFiles.includes(file.id)));
           setDeleteSuccess({show: true, count: selectedFiles.length});
@@ -4141,16 +4140,16 @@ const DWSSBIMDashboard = () => {
       setFileToDelete(null);
     };
     
-    // Delete confirmation dialog
+    // 删除确认对话框
     const DeleteConfirmModal = () => {
       if (!showDeleteConfirm) return null;
       
       const count = fileToDelete !== null ? 1 : selectedFiles.length;
       const fileNames = fileToDelete !== null 
-        ? files.find(f => f.id === fileToDelete)?.name || "Unknown file"
+        ? files.find(f => f.id === fileToDelete)?.name || "未知文件"
         : selectedFiles.length > 2 
-          ? `${files.find(f => f.id === selectedFiles[0])?.name || "Unknown file"} and ${selectedFiles.length - 1} more files` 
-          : selectedFiles.map(id => files.find(f => f.id === id)?.name || "Unknown file").join(", ");
+          ? `${files.find(f => f.id === selectedFiles[0])?.name || "未知文件"} 等 ${selectedFiles.length} 个文件` 
+          : selectedFiles.map(id => files.find(f => f.id === id)?.name || "未知文件").join(", ");
       
       return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -4159,17 +4158,17 @@ const DWSSBIMDashboard = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
                 <AlertCircle className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Confirm deletion</h3>
+              <h3 className="text-lg font-medium mb-2">确认删除</h3>
               <p className="text-gray-600">
-                Are you sure you want to delete <span className="font-medium">{fileNames}</span>?
+                您确定要删除 <span className="font-medium">{fileNames}</span> 吗？
               </p>
-              <p className="text-gray-500 text-sm mt-2">This action cannot be undone</p>
+              <p className="text-gray-500 text-sm mt-2">此操作无法撤销</p>
             </div>
             
             {isDeleting ? (
               <div className="flex justify-center items-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                <span className="ml-2 text-gray-600">Deleting...</span>
+                <span className="ml-2 text-gray-600">正在删除...</span>
               </div>
             ) : (
               <div className="flex justify-end space-x-3">
@@ -4178,14 +4177,14 @@ const DWSSBIMDashboard = () => {
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                   disabled={isDeleting}
                 >
-                  Cancel
+                  取消
                 </button>
                 <button 
                   onClick={confirmDelete}
                   className="px-4 py-2 bg-red-600 rounded-md text-white hover:bg-red-700"
                   disabled={isDeleting}
                 >
-                  Confirm deletion
+                  确认删除
                 </button>
               </div>
             )}
@@ -4194,21 +4193,21 @@ const DWSSBIMDashboard = () => {
       );
     };
     
-    // Delete success toast
+    // 删除成功提示
     const DeleteSuccessToast = () => {
       if (!deleteSuccess.show) return null;
       
       return (
         <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-md shadow-lg flex items-center z-50">
           <CheckCircle className="w-5 h-5 mr-2" />
-          <span>Successfully deleted {deleteSuccess.count} files</span>
+          <span>成功删除 {deleteSuccess.count} 个文件</span>
         </div>
       );
     };
     
     const filteredFiles = getFilteredFiles();
     
-    // ACC file upload modal
+    // ACC文件上传模态框
     const ACCUploadModal = () => {
       if (!showUploadModal) return null;
       
@@ -4216,7 +4215,7 @@ const DWSSBIMDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] flex flex-col">
             <div className="border-b px-6 py-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Add files from ACC platform</h2>
+              <h2 className="text-xl font-semibold">从ACC平台添加文件</h2>
               <button 
                 onClick={resetUploadModal}
                 className="text-gray-500 hover:text-gray-700"
@@ -4226,7 +4225,7 @@ const DWSSBIMDashboard = () => {
             </div>
             
             <div className="px-6 py-4 flex-1 overflow-hidden">
-              {/* Step indicator */}
+              {/* 步骤指示器 */}
               <div className="flex items-center mb-6">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${uploadStep >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                   1
@@ -4241,17 +4240,17 @@ const DWSSBIMDashboard = () => {
                 </div>
               </div>
               
-              {/* Step content */}
+              {/* 步骤内容 */}
               {uploadStep === 1 && (
                 <div className="flex-1 overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-medium">Select ACC platform files</h3>
+                    <h3 className="text-lg font-medium">选择ACC平台文件</h3>
                     <div className="text-sm text-gray-600">
-                      Selected {selectedACCFiles.length} files
+                      已选择 {selectedACCFiles.length} 个文件
                               </div>
                   </div>
                   
-                  {/* File tree container */}
+                  {/* 文件树容器 */}
                   <div className="border rounded-lg bg-white overflow-auto" style={{ height: '400px' }}>
                     <div className="py-2">
                       {Object.entries(accFiles).map(([nodeId, node]) => 
@@ -4264,9 +4263,9 @@ const DWSSBIMDashboard = () => {
               
               {uploadStep === 2 && (
                 <div>
-                  <h3 className="text-lg font-medium mb-4">Upload files</h3>
+                  <h3 className="text-lg font-medium mb-4">上传文件</h3>
                   <div className="mb-4">
-                    <p className="text-gray-600 mb-2">Selected {selectedACCFiles.length} files</p>
+                    <p className="text-gray-600 mb-2">已选择 {selectedACCFiles.length} 个文件</p>
                     <ul className="border rounded-lg p-3 mb-4 max-h-40 overflow-y-auto">
                       {selectedACCFiles.map(fileId => {
                         const allFiles = getAllACCFiles();
@@ -4290,12 +4289,12 @@ const DWSSBIMDashboard = () => {
                           ></div>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
-                          <span>Uploading...</span>
+                          <span>上传中...</span>
                           <span>{uploadProgress}%</span>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-gray-600">Click the button below to start uploading</p>
+                      <p className="text-gray-600">点击下方按钮开始上传</p>
                     )}
                   </div>
                 </div>
@@ -4306,8 +4305,8 @@ const DWSSBIMDashboard = () => {
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
                     <CheckCircle className="w-8 h-8" />
                   </div>
-                  <h3 className="text-lg font-medium mb-2">Upload successful</h3>
-                  <p className="text-gray-600 mb-4">Successfully uploaded {selectedACCFiles.length} files</p>
+                  <h3 className="text-lg font-medium mb-2">上传成功</h3>
+                  <p className="text-gray-600 mb-4">已成功上传 {selectedACCFiles.length} 个文件</p>
                 </div>
               )}
             </div>
@@ -4318,7 +4317,7 @@ const DWSSBIMDashboard = () => {
                   onClick={resetUploadModal}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
-                  Cancel
+                  取消
                 </button>
               )}
               
@@ -4328,7 +4327,7 @@ const DWSSBIMDashboard = () => {
                   disabled={selectedACCFiles.length === 0}
                   className={`px-4 py-2 rounded-md text-white ${selectedACCFiles.length > 0 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-300 cursor-not-allowed'}`}
                 >
-                  Next
+                  下一步
                 </button>
               )}
               
@@ -4337,7 +4336,7 @@ const DWSSBIMDashboard = () => {
                   onClick={handleUploadFiles}
                   className="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700"
                 >
-                  Start uploading
+                  开始上传
                 </button>
               )}
               
@@ -4346,7 +4345,7 @@ const DWSSBIMDashboard = () => {
                   onClick={completeUpload}
                   className="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700"
                 >
-                  Complete
+                  完成
                 </button>
               )}
             </div>
@@ -4403,7 +4402,7 @@ const DWSSBIMDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium">Edit file</h3>
+              <h3 className="text-lg font-medium">编辑文件</h3>
               <button 
                 onClick={() => setShowEditModal(false)}
                 className="text-gray-500 hover:text-gray-700"
@@ -4415,7 +4414,7 @@ const DWSSBIMDashboard = () => {
             <div className="space-y-4">
               <div>
                 <label htmlFor="fileName" className="block text-sm font-medium text-gray-700 mb-1">
-                  File name
+                  文件名称
                 </label>
                 <input
                   type="text"
@@ -4428,7 +4427,7 @@ const DWSSBIMDashboard = () => {
               
               <div>
                 <label htmlFor="fileType" className="block text-sm font-medium text-gray-700 mb-1">
-                  File type
+                  文件类型
                 </label>
                 <select
                   id="fileType"
@@ -4444,19 +4443,19 @@ const DWSSBIMDashboard = () => {
               
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <History className="w-4 h-4" />
-                <span>Current version: v{currentVersion}</span>
+                <span>当前版本: v{currentVersion}</span>
                 <span className="mx-2">•</span>
-                <span>After editing, it will be upgraded to: v{currentVersion + 1}</span>
+                <span>编辑后将升级至: v{currentVersion + 1}</span>
               </div>
               
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Calendar className="w-4 h-4" />
-                <span>Upload date: {fileToEdit.uploadDate}</span>
+                <span>上传日期: {fileToEdit.uploadDate}</span>
               </div>
               
               <div className="flex items-center space-x-2 text-sm text-gray-500">
                 <Clock className="w-4 h-4" />
-                <span>Last updated: {fileToEdit.updateDate}</span>
+                <span>最后更新: {fileToEdit.updateDate}</span>
               </div>
             </div>
             
@@ -4465,14 +4464,14 @@ const DWSSBIMDashboard = () => {
                 onClick={() => setShowEditModal(false)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
-                Cancel
+                取消
               </button>
               <button 
                 onClick={saveEditedFile}
                 className="px-4 py-2 bg-blue-600 rounded-md text-white hover:bg-blue-700"
                 disabled={!editedFileName.trim()}
               >
-                Save
+                保存
               </button>
             </div>
           </div>
@@ -4487,7 +4486,7 @@ const DWSSBIMDashboard = () => {
       return (
         <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-md shadow-lg flex items-center z-50">
           <CheckCircle className="w-5 h-5 mr-2" />
-            <span>File edited successfully, version updated</span>
+          <span>文件编辑成功，版本已更新</span>
         </div>
       );
     };
@@ -4514,7 +4513,7 @@ const DWSSBIMDashboard = () => {
             
             <div className="px-6 py-4 flex-1 overflow-auto">
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">File Content Preview</h3>
+                <h3 className="text-lg font-medium mb-3">文件内容预览</h3>
                 <div className="bg-white p-4 rounded border">
                   <p className="text-gray-700 whitespace-pre-wrap">{previewFile.content}</p>
                 </div>
@@ -4526,7 +4525,7 @@ const DWSSBIMDashboard = () => {
                 onClick={() => setShowFilePreview(false)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
-                Close
+                关闭
               </button>
               <button 
                 onClick={() => {
@@ -4539,7 +4538,7 @@ const DWSSBIMDashboard = () => {
                     : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               >
-                {selectedACCFiles.includes(previewFile.id) ? 'Deselect' : 'Select File'}
+                {selectedACCFiles.includes(previewFile.id) ? '取消选择' : '选择文件'}
               </button>
             </div>
           </div>
@@ -4555,11 +4554,11 @@ const DWSSBIMDashboard = () => {
             className="text-blue-600 hover:text-blue-800 flex items-center mr-4"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back
+            返回
           </button>
-          <h1 className="text-xl font-semibold">File Management</h1>
+          <h1 className="text-xl font-semibold">文件管理</h1>
           <span className="text-sm text-gray-500 ml-4">
-            Selected {selectedComponentsForFiles.length} components
+            已选择 {selectedComponentsForFiles.length} 个构件
           </span>
         </div>
         
@@ -4573,7 +4572,7 @@ const DWSSBIMDashboard = () => {
                     onClick={() => setShowUploadModal(true)}
                   >
                     <Plus className="w-4 h-4 mr-1" />
-                    Add File
+                    添加文件
                   </button>
                 )}
                 {!isBindingMode && hasBindingPermission() && selectedFiles.length > 0 && (
@@ -4582,7 +4581,7 @@ const DWSSBIMDashboard = () => {
                     onClick={handleBulkDelete}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Delete ({selectedFiles.length})
+                    删除 ({selectedFiles.length})
                   </button>
                 )}
                 
@@ -4591,7 +4590,7 @@ const DWSSBIMDashboard = () => {
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <Filter className="w-4 h-4 mr-1" />
-                  Filter
+                  筛选
                   {hasActiveFilters() && <span className="ml-1 w-2 h-2 rounded-full bg-blue-600"></span>}
                 </button>
                 
@@ -4600,7 +4599,7 @@ const DWSSBIMDashboard = () => {
                     className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
                     onClick={clearAllFilters}
                   >
-                    Clear Filters
+                    清除筛选
                   </button>
                 )}
               </div>
@@ -4610,7 +4609,7 @@ const DWSSBIMDashboard = () => {
                   type="text"
                   value={fileSearchText}
                   onChange={(e) => setFileSearchText(e.target.value)}
-                  placeholder="Search files..."
+                  placeholder="搜索文件..."
                   className="border rounded-md pl-9 pr-4 py-1.5 text-sm w-64"
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
@@ -4627,12 +4626,12 @@ const DWSSBIMDashboard = () => {
               </div>
             </div>
             
-            {/* Filter Panel */}
+            {/* 筛选面板 */}
             {showFilters && (
               <div className="mb-4 p-4 border rounded-md bg-gray-50">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">日期范围</label>
                     <div className="flex items-center space-x-2">
                       <input
                         type="date"
@@ -4640,7 +4639,7 @@ const DWSSBIMDashboard = () => {
                         onChange={(e) => setDateFilter(prev => ({...prev, start: e.target.value}))}
                         className="border rounded-md px-2 py-1 text-sm w-full"
                       />
-                      <span className="text-gray-500">to</span>
+                      <span className="text-gray-500">至</span>
                       <input
                         type="date"
                         value={dateFilter.end}
@@ -4651,13 +4650,13 @@ const DWSSBIMDashboard = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">File Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">文件类型</label>
                     <select
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value)}
                       className="border rounded-md px-2 py-1 text-sm w-full"
                     >
-                      <option value="">All Types</option>
+                      <option value="">全部类型</option>
                       {fileTypes.map(type => (
                         <option key={type} value={type}>{type}</option>
                       ))}
@@ -4673,7 +4672,7 @@ const DWSSBIMDashboard = () => {
                       onChange={(e) => setShowMyFilesOnly(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
                     />
-                    <span className="text-sm text-gray-700">Show only my uploaded files</span>
+                    <span className="text-sm text-gray-700">只显示我上传的文件</span>
                   </label>
                 </div>
               </div>
@@ -4692,25 +4691,28 @@ const DWSSBIMDashboard = () => {
                       />
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      File Name
+                      文件名称
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
+                      类型
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Version
+                      版本
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Upload Date
+                      上传日期
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Update Date
+                      更新日期
                     </th>
                     <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Uploader
+                      上传者
+                    </th>
+                    <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      关联构件
                     </th>
                     <th className="p-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      操作
                     </th>
                   </tr>
                 </thead>
@@ -4734,7 +4736,7 @@ const DWSSBIMDashboard = () => {
                             {file.name}
                             {file.uploadedBy === currentUser && (
                               <span className="ml-2 px-1.5 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                Mine
+                                我的
                               </span>
                             )}
                           </div>
@@ -4744,12 +4746,13 @@ const DWSSBIMDashboard = () => {
                         <td className="p-3">{file.uploadDate}</td>
                         <td className="p-3">{file.updateDate}</td>
                         <td className="p-3 text-sm text-gray-600">{file.uploadedBy}</td>
+                        <td className="p-3 text-center">{file.objects.length}</td>
                         <td className="p-3">
                           <div className="flex items-center justify-end space-x-1">
                             <button
                               onClick={() => handleListItemClick(file, 'file')}
                               className="text-blue-600 hover:text-blue-800 p-1"
-                              title="View Details"
+                              title="查看详情"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
@@ -4757,7 +4760,7 @@ const DWSSBIMDashboard = () => {
                             {(isAdmin() || file.uploadedBy === currentUser) && !isBindingMode && (
                               <button
                                 className="text-green-600 hover:text-green-800 p-1"
-                                title="Edit File"
+                                title="编辑文件"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditFile(file);
@@ -4770,7 +4773,7 @@ const DWSSBIMDashboard = () => {
                             {(isAdmin() || file.uploadedBy === currentUser) && !isBindingMode && (
                               <button
                                 className="text-red-600 hover:text-red-800 p-1"
-                                title="Delete File"
+                                title="删除文件"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteFile(file.id);
@@ -4787,8 +4790,8 @@ const DWSSBIMDashboard = () => {
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-gray-500">
                         {fileSearchText ? 
-                          `No files found containing "${fileSearchText}"` : 
-                          'No associated files'
+                          `没有找到包含 "${fileSearchText}" 的文件` : 
+                          '没有关联的文件'
                         }
                       </td>
                     </tr>
@@ -4799,63 +4802,63 @@ const DWSSBIMDashboard = () => {
           </div>
         </div>
         
-        {/* ACC File Upload Modal */}
+        {/* ACC文件上传模态框 */}
         <ACCUploadModal />
         
-        {/* Delete Confirmation Dialog */}
+        {/* 删除确认对话框 */}
         <DeleteConfirmModal />
         
-        {/* Delete Success Toast */}
+        {/* 删除成功提示 */}
         <DeleteSuccessToast />
         
-        {/* File Edit Modal */}
+        {/* 文件编辑模态框 */}
         <EditFileModal />
         
-        {/* Edit Success Toast */}
+        {/* 编辑成功提示 */}
         <EditSuccessToast />
         
-        {/* File Preview Modal */}
+        {/* 文件预览模态框 */}
         <FilePreviewModal />
       </div>
     );
   };
 
-  // ==================== Component Deletion Logic Module ====================
+  // ==================== 删除构件逻辑模块 ====================
   
   // 重新创建的删除构件函数 - 更可靠的实现
   const removeComponentFromBindingCart = useCallback((componentId: string): void => {
-    console.log('[DELETE] Starting to delete component:', componentId);
+    console.log('[DELETE] 开始删除构件:', componentId);
     
     // 强制立即更新状态，使用函数式更新确保最新状态
     setBindingCart(prevCart => {
-      console.log('[DELETE] Cart state before deletion:', prevCart);
-      console.log('[DELETE] Component count before deletion:', prevCart.objects.length);
-      console.log('[DELETE] Component ID to be deleted:', componentId);
+      console.log('[DELETE] 删除前购物车状态:', prevCart);
+      console.log('[DELETE] 删除前构件数量:', prevCart.objects.length);
+      console.log('[DELETE] 要删除的构件ID:', componentId);
       
       // 检查构件是否存在
       const targetComponent = prevCart.objects.find(obj => obj.id === componentId);
       if (!targetComponent) {
-        console.warn('[DELETE] Warning: The component to be deleted does not exist in the cart');
+        console.warn('[DELETE] 警告: 要删除的构件不存在于购物车中');
         return prevCart; // 如果构件不存在，返回原状态
       }
       
-      console.log('[DELETE] Found target component:', targetComponent.name, targetComponent.id);
+      console.log('[DELETE] 找到目标构件:', targetComponent.name, targetComponent.id);
       
       // 过滤掉要删除的构件
       const updatedObjects = prevCart.objects.filter(obj => {
         const shouldKeep = obj.id !== componentId;
-                  if (!shouldKeep) {
-           console.log('[DELETE] Deleting component:', obj.name, obj.id);
-          }
+        if (!shouldKeep) {
+          console.log('[DELETE] 正在删除构件:', obj.name, obj.id);
+        }
         return shouldKeep;
       });
       
-      console.log('[DELETE] Filtered component count:', updatedObjects.length);
-      console.log('[DELETE] Remaining component list:', updatedObjects.map(obj => `${obj.name}(${obj.id})`));
+      console.log('[DELETE] 过滤后构件数量:', updatedObjects.length);
+      console.log('[DELETE] 剩余构件列表:', updatedObjects.map(obj => `${obj.name}(${obj.id})`));
       
       // 重新计算是否包含历史构件
       const hasHistoricalObjects = updatedObjects.some(obj => obj.version !== 'current');
-      console.log('[DELETE] Recalculated historical object state:', hasHistoricalObjects);
+      console.log('[DELETE] 重新计算历史对象状态:', hasHistoricalObjects);
       
       const newCart = {
         ...prevCart,
@@ -4863,19 +4866,19 @@ const DWSSBIMDashboard = () => {
         hasHistoricalObjects
       };
       
-      console.log('[DELETE] New cart state:', newCart);
-      console.log('[DELETE] Delete operation completed, new component count:', newCart.objects.length);
+      console.log('[DELETE] 新的购物车状态:', newCart);
+      console.log('[DELETE] 删除操作完成，新构件数量:', newCart.objects.length);
       
       return newCart;
     });
     
     // 显示删除成功提示
-    console.log('[DELETE] State update function call completed');
+    console.log('[DELETE] 状态更新函数调用完成');
   }, []); // 移除bindingCart依赖项，避免无限循环
 
   // 重新创建的删除文件函数
   const removeFileFromBindingCart = useCallback((fileId: number): void => {
-    console.log('[DELETE] Starting to delete file:', fileId);
+    console.log('[DELETE] 开始删除文件:', fileId);
     
     setBindingCart(prevCart => {
       const updatedFiles = prevCart.files.filter(file => file.id !== fileId);
@@ -4886,14 +4889,14 @@ const DWSSBIMDashboard = () => {
         hasHistoricalObjects: false
       };
       
-      console.log('[DELETE] File deleted, cart cleared');
+      console.log('[DELETE] 文件删除完成，购物车已清空');
       return newCart;
     });
   }, []);
 
   // 统一的删除函数 - 替换原来的removeFromBindingCart
   const removeFromBindingCart = useCallback((item: FileItem | Component, type: string): void => {
-    console.log('[DELETE] Delete request:', { type, item: item.id });
+    console.log('[DELETE] 删除请求:', { type, item: item.id });
     
     try {
       if (type === 'file') {
@@ -4903,10 +4906,10 @@ const DWSSBIMDashboard = () => {
         const objItem = item as Component;
         removeComponentFromBindingCart(objItem.id);
       } else {
-        console.error('[DELETE] Unknown delete type:', type);
+        console.error('[DELETE] 未知的删除类型:', type);
       }
     } catch (error) {
-      console.error('[DELETE] Error during deletion:', error);
+      console.error('[DELETE] 删除过程中出错:', error);
     }
   }, [removeFileFromBindingCart, removeComponentFromBindingCart]);
 
@@ -4922,27 +4925,27 @@ const DWSSBIMDashboard = () => {
       // 移除不支持的 stopImmediatePropagation() 调用
       
       if (isDeleting) {
-        console.log('[DELETE-BTN] Already deleting, ignoring duplicate click');
+        console.log('[DELETE-BTN] 已在删除中，忽略重复点击');
         return;
       }
       
-      console.log('[DELETE-BTN] Click delete button:', component.id, component.name);
+      console.log('[DELETE-BTN] 点击删除按钮:', component.id, component.name);
       setIsDeleting(true);
       
       try {
-        console.log('[DELETE-BTN] Starting delete operation');
+        console.log('[DELETE-BTN] 开始执行删除操作');
         
         // 直接调用删除函数，它内部包含了存在性检查和状态更新逻辑
         removeComponentFromBindingCart(component.id);
         
-        console.log('[DELETE-BTN] ✅ Delete function called');
+        console.log('[DELETE-BTN] ✅ 删除函数已调用');
         
       } catch (error) {
-        console.error('[DELETE-BTN] Delete failed:', error);
-        alert(`Failed to delete component: ${error.message || 'Unknown error'}`);
+        console.error('[DELETE-BTN] 删除失败:', error);
+        alert(`删除构件失败: ${error.message || '未知错误'}`);
       } finally {
-        // State updates are asynchronous, but we can reset isDeleting state immediately
-        // The main purpose of isDeleting is to prevent duplicate clicks, not to reflect the actual deletion completion status
+        // 状态更新是异步的，但我们可以立即重置isDeleting状态
+        // isDeleting的主要作用是防止重复点击，而不是反映真实的删除完成状态
         setIsDeleting(false);
       }
     };
@@ -4971,7 +4974,7 @@ const DWSSBIMDashboard = () => {
                 : 'bg-red-50 border-red-200 text-red-600 shadow-sm hover:shadow-md'
             }
           `}
-          title={isDeleting ? "Deleting..." : `Delete component: ${component.name}`}
+          title={isDeleting ? "正在删除..." : `删除构件: ${component.name}`}
           style={{ 
             minWidth: '32px',
             minHeight: '32px',
@@ -4993,10 +4996,10 @@ const DWSSBIMDashboard = () => {
         {/* 添加删除提示 */}
         {isHovered && !isDeleting && (
           <div className="absolute bottom-full right-0 mb-2 px-2 py-1 text-xs text-white bg-red-600 rounded shadow-lg whitespace-nowrap z-50">
-            Click to delete
+            点击删除
             <div className="absolute top-full right-2 w-0 h-0 border-l-2 border-r-2 border-t-4 border-transparent border-t-red-600"></div>
           </div>
-        )}    
+        )}
       </div>
     );
   };
@@ -5050,12 +5053,12 @@ const DWSSBIMDashboard = () => {
       {/* 顶部导航栏 */}
       <div className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold">DWSS-BIM Dashboard</h1>
-          <span className="text-sm text-gray-500">Project: {selectedProject}</span>
+          <h1 className="text-xl font-semibold">DWSS-BIM 仪表板</h1>
+          <span className="text-sm text-gray-500">项目: {selectedProject}</span>
           {viewMode === 'historical' && (
             <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs flex items-center">
               <History className="w-3 h-3 mr-1" />
-              Historical version view
+              历史版本视图
             </span>
           )}
         </div>
@@ -5068,7 +5071,7 @@ const DWSSBIMDashboard = () => {
               }
             }}
             className="p-2 text-gray-600 hover:text-gray-900"
-            title="Project map"
+            title="项目地图"
           >
             <Home className="w-5 h-5" />
           </button>
@@ -5080,19 +5083,19 @@ const DWSSBIMDashboard = () => {
                 }
               }}
               className="p-2 text-gray-600 hover:text-gray-900"
-              title="Admin backend"
+              title="管理员后台"
             >
               <Settings className="w-5 h-5" />
             </button>
           )}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Current user:</span>
+            <span className="text-sm text-gray-600">当前用户:</span>
               <select
               value={currentUser}
               onChange={(e) => {
                 const newUser = e.target.value;
                 if (newUser !== currentUser) {
-                  if (confirmExitBindingMode('Switch user')) {
+                  if (confirmExitBindingMode('切换用户')) {
                     setCurrentUser(newUser);
                   } else {
                     // 如果用户取消，重置选择框到当前用户
@@ -5101,29 +5104,29 @@ const DWSSBIMDashboard = () => {
                 }
               }}
               className="border rounded px-2 py-1 text-sm"
-              title="Switch current user"
+              title="切换当前用户"
             >
-              <option value="Administrator">Administrator</option>
-              <option value="John Doe">John Doe (Authorized user)</option>
-              <option value="Jane Smith">Jane Smith (Authorized user)</option>
-              <option value="Mike Johnson">Mike Johnson (Normal user)</option>
+              <option value="Administrator">管理员</option>
+              <option value="John Doe">John Doe (授权用户)</option>
+              <option value="Jane Smith">Jane Smith (授权用户)</option>
+              <option value="Mike Johnson">Mike Johnson (普通用户)</option>
             </select>
           </div>
           <button 
             onClick={() => {
-              if (confirmExitBindingMode('Logout')) {
+              if (confirmExitBindingMode('退出登录')) {
                 setCurrentView('login');
               }
             }}
             className="text-sm text-blue-600 hover:text-blue-800"
           >
-            Logout
+            退出登录
           </button>
           {/* User Guide Button */}
           <button 
             onClick={() => setShowUserGuide(true)}
             className="p-2 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            title="User guide / Help"
+            title="用户指南 / 帮助"
           >
             <HelpCircle className="w-5 h-5" />
           </button>
@@ -5136,7 +5139,7 @@ const DWSSBIMDashboard = () => {
           <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
             {!leftPanelCollapsed && (
               <div className="flex items-center justify-between w-full">
-                <h2 className="font-medium">Filter and manage</h2>
+                <h2 className="font-medium">筛选与管理</h2>
                 {/* 全局清除所有选择按钮 */}
                 {(hasHydCodeFilter() || selectedRISC || selectedFile || manualHighlightSet.length > 0 || 
                   riscFilters.status || riscFilters.searchText || riscFilters.startDate || riscFilters.endDate || riscFilters.showCurrentModelBinding ||
@@ -5144,10 +5147,10 @@ const DWSSBIMDashboard = () => {
                   <button
                     onClick={clearAllUserSelections}
                     className="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 flex items-center"
-                    title="Clear all filters and selections"
+                    title="清除所有筛选和选择"
                   >
                     <X className="w-3 h-3 mr-1" />
-                    Clear all
+                    清除全部
                   </button>
                 )}
               </div>
@@ -5169,10 +5172,10 @@ const DWSSBIMDashboard = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-sm font-medium flex items-center">
                         <Filter className="w-4 h-4 mr-2" />
-                        HyD Code advanced filter
+                        HyD Code 高级筛选
                         {floatingPanel.isHistoricalView && (
                           <span className="ml-2 text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded">
-                            Historical view not available
+                            历史视图不可用
                           </span>
                         )}
                       </h3>
@@ -5180,10 +5183,10 @@ const DWSSBIMDashboard = () => {
                         <button
                           onClick={clearAllHydCodeFilters}
                           className="text-xs text-red-600 hover:text-red-800"
-                          title="Clear all HyD Code filters"
+                          title="清除所有HyD Code筛选"
                           disabled={floatingPanel.isHistoricalView}
                         >
-                        Clear
+                          清除
                         </button>
                       )}
                     </div>
@@ -5199,11 +5202,11 @@ const DWSSBIMDashboard = () => {
                             }`}
                             disabled={level === 'project' || floatingPanel.isHistoricalView}
                             title={
-                              floatingPanel.isHistoricalView ? 'HyD Code filter not available in historical view' :
-                              level === 'project' ? 'Project field not available' : `Select ${level}`
+                              floatingPanel.isHistoricalView ? '历史视图模式下不可使用HyD Code筛选' :
+                              level === 'project' ? 'Project字段不可选择' : `选择${level}`
                             }
                           >
-                            <option value="">Please select...</option>
+                            <option value="">请选择...</option>
                             {hydCodeOptions[level].map(option => (
                               <option key={option} value={option}>{option}</option>
                 ))}
@@ -5212,7 +5215,7 @@ const DWSSBIMDashboard = () => {
                       ))}
                     </div>
                     <div className="mt-2 text-xs text-blue-600">
-                      Matched components: {floatingPanel.isHistoricalView ? '-' : getHydCodeFilteredComponents().length}
+                      匹配构件: {floatingPanel.isHistoricalView ? '-' : getHydCodeFilteredComponents().length}
                     </div>
                   </div>
                 )}
@@ -5222,15 +5225,15 @@ const DWSSBIMDashboard = () => {
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium flex items-center">
                       <FileText className="w-4 h-4 mr-2" />
-                      RISC Form
+                      RISC 表单
                     </h3>
                     {(riscFilters.status || riscFilters.startDate || riscFilters.endDate || riscFilters.searchText || riscFilters.showCurrentModelBinding || selectedRISC) && (
                       <button
                         onClick={clearAllRiscFiltersAndSelections}
                         className="text-xs text-red-600 hover:text-red-800"
-                        title="Clear all RISC filters and selections"
+                        title="清除所有RISC筛选和选择"
                       >
-                        Clear
+                        清除
                       </button>
                     )}
                   </div>
@@ -5241,13 +5244,13 @@ const DWSSBIMDashboard = () => {
                       <div className="flex-1 mr-2">
                         <input 
                           type="text" 
-                          placeholder="Search request number..." 
+                          placeholder="搜索请求编号..." 
                           value={riscFilters.searchText}
                           onChange={(e) => handleRiscFilterChange('searchText', e.target.value)}
                           className="w-full border rounded px-3 py-1.5 text-xs"
                         />
                       </div>
-                      <button className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded" title="Search">
+                      <button className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded" title="搜索">
                         <Search className="w-3.5 h-3.5 text-gray-600" />
                       </button>
                     </div>
@@ -5256,22 +5259,22 @@ const DWSSBIMDashboard = () => {
                       value={riscFilters.status}
                       onChange={(e) => handleRiscFilterChange('status', e.target.value)}
                       className="w-full border rounded px-2 py-1.5 text-xs"
-                      title="Filter RISC status"
+                      title="筛选RISC状态"
                     >
-                      <option value="">All status</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Submitted">Submitted</option>
-                      <option value="Rejected">Rejected</option>
+                      <option value="">所有状态</option>
+                      <option value="Approved">已批准</option>
+                      <option value="Submitted">已提交</option>
+                      <option value="Rejected">已拒绝</option>
                     </select>
                     
-                    {/* Date Filter - Calendar Icon */}
+                    {/* 日期筛选 - 日历图标 */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Date Filter</span>
+                      <span className="text-xs text-gray-500">日期筛选</span>
                       <div className="relative">
                         <button 
                           onClick={() => setShowRiscDatePicker(!showRiscDatePicker)}
                           className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-                          title="Select date range"
+                          title="选择日期范围"
                         >
                           <Calendar className="w-4 h-4" />
                         </button>
@@ -5283,21 +5286,21 @@ const DWSSBIMDashboard = () => {
                           endDate={riscFilters.endDate}
                           onStartDateChange={(date) => handleRiscFilterChange('startDate', date)}
                           onEndDateChange={(date) => handleRiscFilterChange('endDate', date)}
-                          title="RISC Form Date Filter"
+                          title="RISC表单日期筛选"
                         />
                       </div>
                     </div>
                     
-                    {/* Display current selected date range */}
+                    {/* 显示当前选择的日期范围 */}
                     {(riscFilters.startDate || riscFilters.endDate) && (
                       <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                        {riscFilters.startDate && `From: ${riscFilters.startDate}`}
+                        {riscFilters.startDate && `从: ${riscFilters.startDate}`}
                         {riscFilters.startDate && riscFilters.endDate && ' '}
-                        {riscFilters.endDate && `To: ${riscFilters.endDate}`}
+                        {riscFilters.endDate && `到: ${riscFilters.endDate}`}
                       </div>
                     )}
                     
-                    {/* Current Model Binding Filter */}
+                    {/* 当前模型绑定筛选 */}
                     <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -5307,12 +5310,12 @@ const DWSSBIMDashboard = () => {
                         className="mr-2 rounded"
                       />
                       <label htmlFor="showCurrentModelBindingRisc" className="text-xs text-gray-700 cursor-pointer">
-                        Only show current model binding
+                        只显示当前模型绑定
                       </label>
                     </div>
                   </div>
                   
-                  {/* RISC List */}
+                  {/* RISC 列表 */}
                   <div className="flex-1 min-h-0 overflow-hidden">
                     <div className="border rounded-md overflow-hidden h-full flex flex-col">
                       <table className="w-full text-xs">
@@ -5388,7 +5391,7 @@ const DWSSBIMDashboard = () => {
                             ) : (
                               <tr>
                                 <td colSpan={4} className="text-center py-4 text-sm text-gray-500">
-                                  No RISC forms found
+                                  没有符合条件的RISC表单
                                 </td>
                               </tr>
                             )}
@@ -5403,20 +5406,20 @@ const DWSSBIMDashboard = () => {
           )}
         </div>
 
-        {/* Central BIM Viewer */}
+        {/* 中央BIM查看器 */}
         <div className="flex-1 bg-gray-100 relative">
           <div className="absolute inset-0 flex items-center justify-center p-4">
             <div className="text-center w-full max-w-6xl">
               {getFilteredObjectGroups().length > 0 ? (
                 <div className="bg-white p-6 rounded-lg shadow-lg w-full">
-                  {/* Model Version Selector */}
+                  {/* 模型版本选择器 */}
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-medium text-gray-700">BIM Model View</h3>
+                    <h3 className="text-lg font-medium text-gray-700">BIM 模型视图</h3>
                     <select 
                       value={selectedModelVersion}
                       onChange={(e) => handleModelVersionChange(e.target.value)}
                       className="border rounded px-3 py-1 text-sm"
-                      title="Select model version"
+                      title="选择模型版本"
                     >
                       {modelVersions.map(version => (
                         <option 
@@ -5425,7 +5428,7 @@ const DWSSBIMDashboard = () => {
                           disabled={isBindingMode && version.value !== 'current'}
                         >
                           {version.label} - {version.date}
-                          {isBindingMode && version.value !== 'current' && ' (Not available in binding mode)'}
+                          {isBindingMode && version.value !== 'current' && ' (绑定模式下不可用)'}
                         </option>
                       ))}
                     </select>
@@ -5438,7 +5441,7 @@ const DWSSBIMDashboard = () => {
                   } rounded-lg mb-4 flex flex-col items-center justify-start p-4 overflow-y-auto`}>
                     <div className="text-center w-full">
                       <div className="text-lg font-medium text-gray-700 mb-4 flex items-center justify-center">
-                        {viewMode === 'current' ? 'Current version' : 'Historical version'}
+                        {viewMode === 'current' ? '当前版本' : '历史版本'}
                         {viewMode === 'historical' && (
                           <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-800 rounded-full text-xs flex items-center">
                             <History className="w-3 h-3 mr-1" />
@@ -5455,7 +5458,7 @@ const DWSSBIMDashboard = () => {
                             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center font-medium shadow-md transition-all"
                           >
                             <Plus className="w-4 h-4 mr-2" />
-                            Add all highlighted components to binding ({getFinalHighlightSet().length})
+                            添加所有高亮构件到绑定 ({getFinalHighlightSet().length})
                           </button>
                         </div>
                       )}
@@ -5465,7 +5468,7 @@ const DWSSBIMDashboard = () => {
                         <div className="mb-4 flex justify-center">
                           <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center font-medium shadow-md">
                             <CheckCircle className="w-4 h-4 mr-2" />
-                            Processing component addition...
+                            正在处理构件添加...
                           </div>
                         </div>
                       )}
@@ -5475,7 +5478,7 @@ const DWSSBIMDashboard = () => {
                         <div className="mb-4 flex justify-center">
                           <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg flex items-center font-medium">
                             <Info className="w-4 h-4 mr-2" />
-                            Please select or filter components to highlight
+                            请选择或筛选构件以高亮显示
                           </div>
                         </div>
                       )}
@@ -5556,17 +5559,17 @@ const DWSSBIMDashboard = () => {
                       </div>
                       
                       <div className="text-xs text-gray-600">
-                        Displaying {getFilteredObjectGroups().length} components
+                        显示 {getFilteredObjectGroups().length} 个构件
                         {manualHighlightSet.length > 0 && (
                           <span className="ml-2 text-purple-600">
-                            (Manually selected: {manualHighlightSet.length} components)
+                            (手动选择: {manualHighlightSet.length} 个)
                           </span>
                         )}
                       </div>
                       
                       {getFinalHighlightSet().length > 0 && (
                         <div className="text-xs text-blue-600 mt-2 font-medium">
-                          Final highlighted set: {getFinalHighlightSet().length} components
+                          最终高亮集: {getFinalHighlightSet().length} 个构件
                         </div>
                       )}
                       {hoveredObjects.length > 0 && (
@@ -5575,10 +5578,10 @@ const DWSSBIMDashboard = () => {
                             ? 'text-blue-600' 
                             : 'text-yellow-600'
                         }`}>
-                          Hover preview: {hoveredObjects.length} components {
+                          悬浮预览: {hoveredObjects.length} 个构件 {
                             getFinalHighlightSet().length === 0
-                              ? '(blue)' 
-                              : '(yellow overlay)'
+                              ? '(蓝色)' 
+                              : '(黄色覆盖)'
                           }
                         </div>
                       )}
@@ -5590,7 +5593,7 @@ const DWSSBIMDashboard = () => {
                           className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
                         >
                           <Layers className="w-4 h-4 mr-2" />
-                          {showComponentTree ? 'Hide model part tree' : 'Show model part tree'}
+                          {showComponentTree ? '隐藏模型零件树' : '显示模型零件树'}
                         </button>
                       </div>
                     </div>
@@ -5598,25 +5601,25 @@ const DWSSBIMDashboard = () => {
                   
                   {selectedRISC && (
                     <div className="text-xs text-blue-600 border-t pt-2">
-                      Associated RISC: {selectedRISC}
+                      关联RISC: {selectedRISC}
                     </div>
                   )}
                   {selectedFile && (
                     <div className="text-xs text-green-600 border-t pt-2">
-                      Associated file: {files.find(f => f.id === selectedFile)?.name.substring(0, 30)}...
+                      关联文件: {files.find(f => f.id === selectedFile)?.name.substring(0, 30)}...
                     </div>
                   )}
                   
                   {hoveredItem && (
                     <div className="text-xs text-yellow-600 border-t pt-2">
-                      Hover preview: {hoveredItemType === 'risc' ? hoveredItem.requestNo : hoveredItem.name?.substring(0, 30) + '...'}
+                      悬浮预览: {hoveredItemType === 'risc' ? hoveredItem.requestNo : hoveredItem.name?.substring(0, 30) + '...'}
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="text-gray-500">
-                  <div className="text-lg mb-2">No BIM components to display</div>
-                  <div className="text-sm">Please adjust the filter conditions or select other model versions</div>
+                  <div className="text-lg mb-2">无可显示的BIM构件</div>
+                  <div className="text-sm">请调整筛选条件或选择其他模型版本</div>
                 </div>
               )}
             </div>
@@ -5628,21 +5631,21 @@ const DWSSBIMDashboard = () => {
               <div className="bg-blue-100 border border-blue-300 px-3 py-2 rounded-lg text-sm max-w-xs">
                 <div className="font-medium text-blue-800 flex items-center">
                   <Target className="w-4 h-4 mr-2" />
-                  Binding mode activated
+                  绑定模式已激活
                 </div>
                 <div className="text-xs text-blue-600 mt-1">
-                  • Select a file to bind (1 file ↔ multiple components)
+                  • 选择文件进行绑定（1个文件 ↔ 多个构件）
                 </div>
                 <div className="text-xs text-blue-600">
-                  • Highlight components by filtering or manually selecting
+                  • 通过筛选或手动选择构件进行高亮
                 </div>
                 <div className="text-xs text-blue-600">
-                  • Click "Add all highlighted components" to batch add
+                  • 点击"添加所有高亮构件"批量添加
                 </div>
                 {bindingCart.hasHistoricalObjects && (
                   <div className="mt-1 text-xs text-orange-600 flex items-center">
                     <History className="w-3 h-3 mr-1" />
-                    Contains historical version components
+                    包含历史版本构件
                   </div>
                 )}
               </div>
@@ -5653,7 +5656,7 @@ const DWSSBIMDashboard = () => {
         {/* 右侧栏 */}
         <div className={`bg-white shadow-sm transition-all duration-300 ${rightPanelCollapsed ? 'w-12' : 'w-80'} flex flex-col`}>
           <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
-            {!rightPanelCollapsed && <h2 className="font-medium">File management</h2>}
+            {!rightPanelCollapsed && <h2 className="font-medium">文件管理</h2>}
             <button 
               onClick={() => setRightPanelCollapsed(!rightPanelCollapsed)}
               className="p-1 hover:bg-gray-100 rounded"
@@ -5668,22 +5671,22 @@ const DWSSBIMDashboard = () => {
                 {/* 文件筛选 */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium">File list</h3>
+                    <h3 className="text-sm font-medium">文件列表</h3>
                     <div className="flex items-center space-x-2">
                       {(fileFilters.type || fileFilters.startDate || fileFilters.endDate || fileFilters.searchText || fileFilters.showMyFiles || fileFilters.showCurrentModelBinding || selectedFile) && (
                         <button
                           onClick={clearAllFileFiltersAndSelections}
                           className="text-xs text-red-600 hover:text-red-800"
-                          title="Clear all file filters and selections"
+                          title="清除所有文件筛选和选择"
                         >
-                          Clear
+                          清除
                         </button>
                       )}
-                                             {hasBindingPermission() && (
-                         <button className="p-1 text-gray-600 hover:text-gray-900" title="Add file">
-                            <Plus className="w-4 h-4" />
-                          </button>
-                       )}
+                      {hasBindingPermission() && (
+                        <button className="p-1 text-gray-600 hover:text-gray-900" title="添加文件">
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                   
@@ -5692,13 +5695,13 @@ const DWSSBIMDashboard = () => {
                       <div className="flex-1 mr-2">
                         <input 
                           type="text" 
-                          placeholder="Search file name..." 
+                          placeholder="搜索文件名..." 
                           value={fileFilters.searchText}
                           onChange={(e) => handleFileFilterChange('searchText', e.target.value)}
                           className="w-full border rounded px-3 py-1.5 text-xs"
                         />
                       </div>
-                      <button className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded" title="Search">
+                      <button className="p-1.5 bg-gray-100 hover:bg-gray-200 rounded" title="搜索">
                         <Search className="w-3.5 h-3.5 text-gray-600" />
                       </button>
                     </div>
@@ -5707,13 +5710,13 @@ const DWSSBIMDashboard = () => {
                       value={fileFilters.type}
                       onChange={(e) => handleFileFilterChange('type', e.target.value)}
                       className="w-full border rounded px-3 py-1.5 text-xs"
-                      title="Filter file type"
+                      title="筛选文件类型"
                     >
-                      <option value="">All types</option>
-                      <option value="Method Statement">Method statement</option>
-                      <option value="Material Submission">Material submission</option>
-                      <option value="Working Drawings">Working drawings</option>
-                      <option value="Test Result">Test result</option>
+                      <option value="">所有类型</option>
+                      <option value="Method Statement">施工方案</option>
+                      <option value="Material Submission">物料提交</option>
+                      <option value="Working Drawings">施工图纸</option>
+                      <option value="Test Result">测试报告</option>
                     </select>
                     
                     {/* 我上传的文件筛选 - 仅管理员和授权用户可见 */}
@@ -5727,7 +5730,7 @@ const DWSSBIMDashboard = () => {
                           className="mr-2 rounded"
                         />
                         <label htmlFor="showMyFiles" className="text-xs text-gray-700 cursor-pointer">
-                          My uploaded files
+                          我上传的文件
                 </label>
                       </div>
               )}
@@ -5742,18 +5745,18 @@ const DWSSBIMDashboard = () => {
                         className="mr-2 rounded"
                       />
                       <label htmlFor="showCurrentModelBindingFile" className="text-xs text-gray-700 cursor-pointer">
-                        Only show current model binding
+                        只显示当前模型绑定
                       </label>
                     </div>
               
                     {/* 日期筛选 - 日历图标 */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">Date filter</span>
+                      <span className="text-xs text-gray-500">日期筛选</span>
                       <div className="relative">
               <button
                           onClick={() => setShowFileDatePicker(!showFileDatePicker)}
                           className="p-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-                          title="Select date range"
+                          title="选择日期范围"
                         >
                           <Calendar className="w-4 h-4" />
                         </button>
@@ -5765,7 +5768,7 @@ const DWSSBIMDashboard = () => {
                           endDate={fileFilters.endDate}
                           onStartDateChange={(date) => handleFileFilterChange('startDate', date)}
                           onEndDateChange={(date) => handleFileFilterChange('endDate', date)}
-                          title="File date filter"
+                          title="文件日期筛选"
                         />
                       </div>
                     </div>
@@ -5773,9 +5776,9 @@ const DWSSBIMDashboard = () => {
                     {/* 显示当前选择的日期范围 */}
                     {(fileFilters.startDate || fileFilters.endDate) && (
                       <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                        {fileFilters.startDate && `From: ${fileFilters.startDate}`}
+                        {fileFilters.startDate && `从: ${fileFilters.startDate}`}
                         {fileFilters.startDate && fileFilters.endDate && ' '}
-                        {fileFilters.endDate && `To: ${fileFilters.endDate}`}
+                        {fileFilters.endDate && `到: ${fileFilters.endDate}`}
                       </div>
                     )}
                   </div>
@@ -5789,22 +5792,22 @@ const DWSSBIMDashboard = () => {
                       <div className="font-medium text-blue-800 flex items-center justify-between">
                         <div className="flex items-center">
                           <Target className="w-4 h-4 mr-2" />
-                          Binding mode activated
+                          绑定模式已激活
                         </div>
                         <button 
                           onClick={exitBindingMode}
                           className="bg-red-600 text-white text-xs py-1 px-2 rounded hover:bg-red-700"
                         >
-                          Exit
+                          退出
                         </button>
                       </div>
                       <div className="text-xs text-blue-600 mt-1">
-                        Select a file to bind | Highlight components in BIM view, then click "Add all highlighted components" button
+                        选择文件进行绑定 | 在BIM视图中高亮构件，然后点击"添加所有高亮构件"按钮
                       </div>
                       {bindingCart.hasHistoricalObjects && (
                         <div className="mt-1 text-xs text-orange-600 flex items-center">
                           <History className="w-3 h-3 mr-1" />
-                          Contains historical version components
+                          包含历史版本构件
                         </div>
                       )}
                     </div>
@@ -5886,21 +5889,21 @@ const DWSSBIMDashboard = () => {
                                     {file.type}
                                   </span>
                                   <span className="text-xs text-gray-500 ml-4">
-                                    Uploaded: {file.uploadDate}
+                                    上传: {file.uploadDate}
                                   </span>
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  Updated: {file.updateDate}
+                                  更新: {file.updateDate}
                                 </div>
                                 {file.uploadedBy === currentUser && (
                                   <div className="text-xs text-blue-600 mt-1">
-                                    My uploaded files
+                                    我上传的文件
                                   </div>
                                 )}
                                 {file.bindingStatus === 'history' && (
                                   <div className="text-xs text-orange-600 mt-1 flex items-center">
                                     <History className="w-3 h-3 mr-1" />
-                                    Historical version binding
+                                    历史版本绑定
                                   </div>
                                 )}
                               </div>
@@ -5908,7 +5911,7 @@ const DWSSBIMDashboard = () => {
                                 {/* 绑定模式下显示当前选中文件 */}
                                 {isBindingMode && isInCart && (
                                   <div className="text-xs text-green-600 font-medium">
-                                    Current selected
+                                    当前选中
                                   </div>
                                 )}
                                 
@@ -5921,13 +5924,13 @@ const DWSSBIMDashboard = () => {
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           if (viewMode === 'historical') {
-                                            alert('Historical view does not allow entering binding mode. Please switch to the current version first.');
+                                            alert('历史视图下不允许进入绑定模式。请先切换到当前版本后再开始绑定。');
                                             return;
                                           }
                                           editExistingBinding(file);
                                         }}
                                         className={`p-1 ${viewMode === 'historical' ? 'text-gray-400 cursor-not-allowed' : 'text-green-600 hover:text-green-800'}`}
-                                        title={viewMode === 'historical' ? 'Historical view not available' : 'Edit binding relationship'}
+                                        title={viewMode === 'historical' ? '历史视图下不可用' : '修改绑定关系'}
                                         disabled={viewMode === 'historical'}
                                       >
                                         <Link className="w-4 h-4" />
@@ -5942,7 +5945,7 @@ const DWSSBIMDashboard = () => {
                                           addToBindingCart(file, 'file');
                                         }}
                                         className={`p-1 ${viewMode === 'historical' ? 'text-gray-400 cursor-not-allowed' : 'text-orange-600 hover:text-orange-800'}`}
-                                        title={viewMode === 'historical' ? 'Historical view not available' : 'Start binding relationship'}
+                                        title={viewMode === 'historical' ? '历史视图下不可用' : '开始绑定关系'}
                                         disabled={viewMode === 'historical'}
                                       >
                                         <Link className="w-4 h-4" />
@@ -5984,7 +5987,7 @@ const DWSSBIMDashboard = () => {
                       <BindingCartContent />
                     </div>
                     
-                    {/* Binding action buttons - ensure always visible */}
+                    {/* 绑定操作按钮 - 确保始终显示 */}
                     <div className="flex space-x-2 mt-4">
                       <button 
                         onClick={submitBinding}
@@ -6008,16 +6011,16 @@ const DWSSBIMDashboard = () => {
         </div>
       </div>
 
-      {/* Quick compare panel */}
+      {/* 快速对比面板 */}
       <QuickComparePanel />
       
       {/* Binding Management Panel - Floating Cart */}
       <BindingManagementPanel />
       
-      {/* Component tree panel */}
+      {/* 组件树面板 */}
       <ComponentTreePanel />
       
-      {/* Right click menu */}
+      {/* 右键菜单 */}
       <ContextMenu />
       
       {/* 历史视图浮窗 - 优化UI尺寸和位置 */}

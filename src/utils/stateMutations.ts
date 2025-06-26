@@ -1,8 +1,8 @@
-// 状态变更工具函数
+// State Mutation Utility Functions
 import { HydCode, RiscFilters, FileFilters } from '../types';
 
 export class StateMutations {
-  // 清除所有RISC筛选
+  // Clear all RISC filters
   static clearAllRiscFilters(setRiscFilters: (filters: RiscFilters) => void): void {
     setRiscFilters({
       status: '',
@@ -12,7 +12,7 @@ export class StateMutations {
     });
   }
 
-  // 清除所有文件筛选
+  // Clear all file filters
   static clearAllFileFilters(setFileFilters: (filters: any) => void): void {
     setFileFilters({
       type: '',
@@ -23,7 +23,7 @@ export class StateMutations {
     });
   }
 
-  // 清除所有HyD Code筛选
+  // Clear all HyD Code filters
   static clearAllHydCodeFilters(
     setHydCodeFilter: (filter: HydCode) => void,
     setFilterHighlightSet: (set: string[]) => void
@@ -37,11 +37,11 @@ export class StateMutations {
       grid: '',
       cat: ''
     });
-    // 手动清除HyD Code筛选时，清空筛选高亮集，但保留手动高亮集
+    // When manually clearing HyD Code filters, clear the filter highlight set but keep the manual highlight set
     setFilterHighlightSet([]);
   }
 
-  // 清除所有用户选择 - 新功能
+  // Clear all user selections - New feature
   static clearAllUserSelections(
     setHydCodeFilter: (filter: HydCode) => void,
     setRiscFilters: (filters: RiscFilters) => void,
@@ -54,7 +54,7 @@ export class StateMutations {
     setHoveredItem: (item: any) => void,
     setHoveredItemType: (type: string | null) => void
   ): void {
-    // 清除所有筛选条件
+    // Clear all filter conditions
     setHydCodeFilter({
       project: 'HY202404',
       contractor: '',
@@ -78,7 +78,7 @@ export class StateMutations {
       showMyFiles: false
     });
     
-    // 清除所有高光和选择状态
+    // Clear all highlights and selection states
     setFilterHighlightSet([]);
     setManualHighlightSet([]);
     setSelectedRISC(null);
@@ -88,7 +88,7 @@ export class StateMutations {
     setHoveredItemType(null);
   }
 
-  // 清除所有RISC筛选和相关选择 - 增强版
+  // Clear all RISC filters and related selections - Enhanced version
   static clearAllRiscFiltersAndSelections(
     setRiscFilters: (filters: RiscFilters) => void,
     selectedRISC: string | null,
@@ -103,10 +103,10 @@ export class StateMutations {
       searchText: ''
     });
     
-    // 如果当前有RISC选中，也清除相关高光
+    // If a RISC is currently selected, also clear related highlights
     if (selectedRISC) {
       setSelectedRISC(null);
-      // 只清除与该RISC相关的手动高光，保留其他筛选产生的高光
+      // Only clear manual highlights related to this RISC, keep other filter-generated highlights
       const currentRisc = riscForms.find(r => r.id === selectedRISC);
       if (currentRisc) {
         setManualHighlightSet(prev => 
@@ -116,7 +116,7 @@ export class StateMutations {
     }
   }
 
-  // 清除所有文件筛选和相关选择 - 增强版
+  // Clear all file filters and related selections - Enhanced version
   static clearAllFileFiltersAndSelections(
     setFileFilters: (filters: any) => void,
     selectedFile: number | null,
@@ -132,10 +132,10 @@ export class StateMutations {
       showMyFiles: false
     });
     
-    // 如果当前有文件选中，也清除相关高光
+    // If a file is currently selected, also clear related highlights
     if (selectedFile) {
       setSelectedFile(null);
-      // 只清除与该文件相关的手动高光，保留其他筛选产生的高光
+      // Only clear manual highlights related to this file, keep other filter-generated highlights
       const currentFile = files.find(f => f.id === selectedFile);
       if (currentFile) {
         setManualHighlightSet(prev => 
@@ -145,7 +145,7 @@ export class StateMutations {
     }
   }
 
-  // 清除所有高亮状态的辅助函数
+  // Helper function to clear all highlight states
   static clearAllHighlightsAfterAdd(
     setManualHighlightSet: (set: string[]) => void,
     setFilterHighlightSet: (set: string[]) => void,
@@ -156,11 +156,11 @@ export class StateMutations {
     setHoveredItem: (item: any) => void,
     setHoveredItemType: (type: string | null) => void
   ): void {
-    // 清除手动高亮集
+    // Clear manual highlight set
     setManualHighlightSet([]);
-    // 清除筛选高亮集
+    // Clear filter highlight set
     setFilterHighlightSet([]);
-    // 清除HyD Code筛选（如果有的话）
+    // Clear HyD Code filter (if any)
     setHydCodeFilter({
       project: 'HY202404',
       contractor: '',
@@ -170,10 +170,10 @@ export class StateMutations {
       grid: '',
       cat: ''
     });
-    // 清除选择状态
+    // Clear selection states
     setSelectedRISC(null);
     setSelectedFile(null);
-    // 清除悬浮状态
+    // Clear hover states
     setHoveredObjects([]);
     setHoveredItem(null);
     setHoveredItemType(null);
