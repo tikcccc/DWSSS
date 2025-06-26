@@ -3930,7 +3930,8 @@ const DWSSBIMDashboard = () => {
     };
     
     const getAssociatedFiles = () => {
-      if (selectedComponentsForFiles.length === 0) return [];
+      // If no components are selected, return the whole file list so that type/date/user filters still work
+      if (selectedComponentsForFiles.length === 0) return files;
       
       return files.filter(file => 
         file.objects.some(objId => selectedComponentsForFiles.includes(objId))
@@ -4656,6 +4657,7 @@ const DWSSBIMDashboard = () => {
                       value={typeFilter}
                       onChange={(e) => setTypeFilter(e.target.value)}
                       className="border rounded-md px-2 py-1 text-sm w-full"
+                      title="Filter by file type"
                     >
                       <option value="">All Types</option>
                       {fileTypes.map(type => (
